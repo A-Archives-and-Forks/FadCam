@@ -64,7 +64,7 @@ public class GeotagHelper {
                 try {
                     Location lastKnown = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     if (lastKnown != null) {
-                        FLog.d(TAG, "Using last known GPS location: " + lastKnown.getLatitude() + ", " + lastKnown.getLongitude());
+                        FLog.d(TAG, "Using last known GPS location: " + com.fadcam.FLog.redactedCoords(lastKnown.getLatitude(), lastKnown.getLongitude()));
                         updateBestLocation(lastKnown);
                     }
                 } catch (SecurityException se) {
@@ -76,7 +76,7 @@ public class GeotagHelper {
                 try {
                     Location lastKnown = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                     if (lastKnown != null) {
-                        FLog.d(TAG, "Using last known network location: " + lastKnown.getLatitude() + ", " + lastKnown.getLongitude());
+                        FLog.d(TAG, "Using last known network location: " + com.fadcam.FLog.redactedCoords(lastKnown.getLatitude(), lastKnown.getLongitude()));
                         updateBestLocation(lastKnown);
                     }
                 } catch (SecurityException se) {
@@ -164,8 +164,8 @@ public class GeotagHelper {
             public void onLocationChanged(Location location) {
                 if (location != null) {
                     FLog.d(TAG, providerName + " location update: " + 
-                         location.getLatitude() + ", " + location.getLongitude() + 
-                         " (accuracy: " + location.getAccuracy() + "m)");
+                                         com.fadcam.FLog.redactedCoords(location.getLatitude(), location.getLongitude()) + 
+                                         " (accuracy: " + location.getAccuracy() + "m)");
                     updateBestLocation(location);
                 }
             }

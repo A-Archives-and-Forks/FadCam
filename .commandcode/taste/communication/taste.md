@@ -2,4 +2,5 @@
 
 - Prefers "caveman skill" in ultra mode for ultra-concise, token-saving responses in chat. Confidence: 0.95
 - Wants technical explanations to be concise and use real-world analogies, progressing from ELI5 up to expert level so concepts are learned permanently. Confidence: 0.85
-- Prefers to always be very concise in responses. Confidence: 0.9
+- Prefers to always be very concise in responses. Confidence: 0.95
+- Prefers honest, non-overpromising answers — no false "always works, zero bugs" guarantees; values verified, evidence-backed claims. Confidence: 0.85

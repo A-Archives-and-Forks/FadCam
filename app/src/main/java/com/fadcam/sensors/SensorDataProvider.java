@@ -18,6 +18,10 @@ public class SensorDataProvider implements SensorEventListener {
 
     private static final int BEARING_MIN_DISTANCE_M = 2;
     private static final float BEARING_SMOOTHING_ALPHA = 0.4f;
+    private static final float MAX_ACCURACY_FOR_SPEED_M = 30f;
+    private static final long MIN_TIME_DELTA_MS = 200;
+    private static final long MAX_TIME_DELTA_MS = 10000;
+    private static final long STALE_LOCATION_TIMEOUT_MS = 10000;
 
     private final SensorManager sensorManager;
     private final Sensor accelerometer;
@@ -88,6 +92,9 @@ public class SensorDataProvider implements SensorEventListener {
         if (initialLocation != null) {
             currentLocation = initialLocation;
             lastLocationTime = System.currentTimeMillis();
+            // Consider the seed "fresh" so the speed read isn't instantly
+            // treated as stale after pause/resume.
+            lastLocationUpdateTime = System.currentTimeMillis();
         }
 
         if (rotationVectorSensor != null) {
@@ -118,7 +125,9 @@ public class SensorDataProvider implements SensorEventListener {
             sensorManager.unregisterListener(this);
             sensorsRegistered = false;
             compassDataReceived = false;
-            currentSpeedMs = 0f;
+            // Keep currentSpeedMs and currentLocation — they hold the last known
+            // values so a pause/resume doesn't briefly show 0 km/h. They are
+            // naturally replaced on the next updateLocation().
             smoothedBearing = -1f;
             hasBearingFromGps = false;
             sensorAzimuth = -1f;
@@ -131,14 +140,29 @@ public class SensorDataProvider implements SensorEventListener {
 
         previousLocation = currentLocation;
         previousLocationTime = lastLocationTime;
+
+        // Prefer the location's own (realtime-based) timestamp — using
+        // System.currentTimeMillis() corrupts the delta when the fix is stale.
+        long locationTime = location.getElapsedRealtimeNanos() > 0
+                ? location.getElapsedRealtimeNanos() / 1_000_000L
+                : System.currentTimeMillis();
+
+        boolean timeAdvanced = lastLocationTime == 0 || locationTime > lastLocationTime;
+
         currentLocation = location;
-        lastLocationTime = System.currentTimeMillis();
+        if (timeAdvanced) {
+            lastLocationTime = locationTime;
+        }
+        if (!timeAdvanced && previousLocation == location) {
+            // Same object fed twice — don't clobber previous with itself.
+            previousLocation = null;
+            previousLocationTime = 0;
+        }
 
         updateSpeedFromGps();
         updateBearingFromGps();
 
-        FLog.d(TAG, "Location: lat=" + String.format("%.4f", location.getLatitude())
-                + ", lon=" + String.format("%.4f", location.getLongitude())
+        FLog.d(TAG, "Location: lat=" + com.fadcam.FLog.redactedCoords(location.getLatitude(), location.getLongitude())
                 + ", speed=" + String.format("%.1f", currentSpeedMs * 3.6f) + "km/h"
                 + " (hasSpeed=" + location.hasSpeed()
                 + ", gps=" + String.format("%.1f", location.getSpeed() * 3.6f) + "km/h)"
@@ -153,19 +177,57 @@ public class SensorDataProvider implements SensorEventListener {
     private void updateSpeedFromGps() {
         if (currentLocation == null) return;
 
+        float computedSpeed = currentSpeedMs;
+
+        // 1) Direct GPS speed. Chipset speed is Doppler-derived, so it stays
+        //    valid even when position accuracy degrades (urban canyons etc.).
+        //    We trust hasSpeed()>0 unconditionally — the provider was already
+        //    filtered to GPS/fused fixes — and only treat a suspicious 0 while
+        //    moving as "no data" so the computed fallback below can take over.
         if (currentLocation.hasSpeed()) {
-            currentSpeedMs = currentLocation.getSpeed();
-        } else if (previousLocation != null && previousLocationTime > 0) {
-            float distance = previousLocation.distanceTo(currentLocation);
-            long timeDeltaMs = lastLocationTime - previousLocationTime;
-            if (timeDeltaMs > 100 && timeDeltaMs < 10000) {
-                currentSpeedMs = distance / (timeDeltaMs / 1000f);
+            float rawSpeed = currentLocation.getSpeed();
+            if (rawSpeed > 0f) {
+                currentSpeedMs = rawSpeed;
+                lastLocationUpdateTime = System.currentTimeMillis();
+                return;
             }
-        } else {
-            currentSpeedMs = 0f;
         }
 
+        // 2) Computed fallback: distance / real elapsed time between fixes.
+        //    Position accuracy DOES matter here (a coarse fix next to a precise
+        //    one produces a garbage distance), so BOTH fixes must be accurate.
+        if (previousLocation != null && previousLocationTime > 0
+                && isLocationAccurateEnough() && isLocationAccurateEnough(previousLocation)) {
+            float distance = previousLocation.distanceTo(currentLocation);
+            long timeDeltaMs = lastLocationTime - previousLocationTime;
+            if (timeDeltaMs > MIN_TIME_DELTA_MS && timeDeltaMs < MAX_TIME_DELTA_MS) {
+                computedSpeed = distance / (timeDeltaMs / 1000f);
+                // Guard against GPS noise/outliers that imply absurd speed.
+                if (computedSpeed >= 0f && computedSpeed <= 90f) {
+                    currentSpeedMs = computedSpeed;
+                }
+            }
+        }
+
+        // 3) Nothing usable — keep last known (do NOT zero it, avoids the
+        //    "stuck at 0 after pause/resume" symptom when a fix is briefly stale).
         lastLocationUpdateTime = System.currentTimeMillis();
+        FLog.d(TAG, "Speed: computed=" + String.format("%.1f", computedSpeed)
+                + "km/h, kept=" + String.format("%.1f", currentSpeedMs * 3.6f)
+                + "km/h (hasSpeed=" + currentLocation.hasSpeed()
+                + " rawGpsMs=" + String.format("%.2f", currentLocation.getSpeed())
+                + " prevDistanceM=" + (previousLocation != null
+                        ? String.format("%.1f", previousLocation.distanceTo(currentLocation)) : "n/a")
+                + " deltaMs=" + (lastLocationTime - previousLocationTime) + ")");
+    }
+
+    private boolean isLocationAccurateEnough() {
+        return isLocationAccurateEnough(currentLocation);
+    }
+
+    private boolean isLocationAccurateEnough(Location loc) {
+        return loc == null || !loc.hasAccuracy()
+                || loc.getAccuracy() <= MAX_ACCURACY_FOR_SPEED_M;
     }
 
     private void updateBearingFromGps() {
@@ -253,6 +315,22 @@ public class SensorDataProvider implements SensorEventListener {
     }
 
     public float getSpeedKmh() {
+        // Honest reporting: only surface a speed if we have a recent fix.
+        // If GPS went stale (no fix for 10s), the value is no longer real —
+        // report 0 so the watermark doesn't show a frozen made-up number.
+        if (System.currentTimeMillis() - lastLocationUpdateTime > STALE_LOCATION_TIMEOUT_MS) {
+            return 0f;
+        }
+        // Self-healing read: if the pull-based updateLocation() feed hasn't run
+        // yet this tick (or after pause/resume), recompute from the raw fix so
+        // we never report a stale 0 while the vehicle is moving. Direct GPS
+        // speed is Doppler-derived and accuracy-independent.
+        if (currentLocation != null && currentLocation.hasSpeed()) {
+            float raw = currentLocation.getSpeed();
+            if (raw > 0f) {
+                currentSpeedMs = raw;
+            }
+        }
         return currentSpeedMs * 3.6f;
     }
 

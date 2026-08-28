@@ -37,6 +37,15 @@ public final class FLog {
 
     private FLog() {}
 
+    /**
+     * Formats coordinates for logging with ~1km precision (2 decimal places).
+     * This is the privacy-safe way to log locations: enough to see movement,
+     * not enough to identify an address. Never log full-precision coordinates.
+     */
+    public static String redactedCoords(double latitude, double longitude) {
+        return String.format(java.util.Locale.US, "%.2f, %.2f", latitude, longitude);
+    }
+
     public static void setRedactor(Redactor customRedactor) {
         redactor = customRedactor;
     }

@@ -72,13 +72,9 @@ public class WatermarkManager implements WatermarkInfoProvider {
         if (prefs.isSpeedEnabled() || prefs.isAltitudeEnabled()
                 || prefs.isCompassEnabled() || prefs.isAccuracyEnabled()) {
             sensorDataProvider = SensorDataProvider.getInstance(context);
-            org.osmdroid.util.GeoPoint gp = locationHelper.getCurrentLocation();
-            Location androidLoc = null;
-            if (gp != null) {
-                androidLoc = new Location("manual");
-                androidLoc.setLatitude(gp.getLatitude());
-                androidLoc.setLongitude(gp.getLongitude());
-            }
+            // Seed with the REAL last fix, never a fabricated coords-only Location.
+            android.location.Location androidLoc = locationHelper != null
+                    ? locationHelper.getRawLocation() : null;
             sensorDataProvider.start(androidLoc);
         }
 
@@ -134,13 +130,9 @@ public class WatermarkManager implements WatermarkInfoProvider {
             if (sensorDataProvider == null) {
                 sensorDataProvider = SensorDataProvider.getInstance(context);
             }
-            org.osmdroid.util.GeoPoint gp = locationHelper != null ? locationHelper.getCurrentLocation() : null;
-            Location androidLoc = null;
-            if (gp != null) {
-                androidLoc = new Location("manual");
-                androidLoc.setLatitude(gp.getLatitude());
-                androidLoc.setLongitude(gp.getLongitude());
-            }
+            // Seed with the REAL last fix, never a fabricated coords-only Location.
+            android.location.Location androidLoc = locationHelper != null
+                    ? locationHelper.getRawLocation() : null;
             sensorDataProvider.start(androidLoc);
         }
         if (prefs.isNoiseEnabled()) {

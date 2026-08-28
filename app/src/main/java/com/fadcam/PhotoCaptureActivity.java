@@ -240,6 +240,8 @@ public class PhotoCaptureActivity extends ComponentActivity {
                 sb.append("Lat: ").append(String.format(java.util.Locale.US, "%.4f", pt.getLatitude()))
                   .append(", Long: ").append(String.format(java.util.Locale.US, "%.4f", pt.getLongitude()));
             }
+            // Grab the REAL raw fix (carries speed/altitude) before stopping.
+            android.location.Location rawFix = lh.getRawLocation();
             lh.stopLocationUpdates();
             // Append UTM if enabled and location available
             if (prefs.isUtmEnabled() && pt != null) {
@@ -249,27 +251,40 @@ public class PhotoCaptureActivity extends ComponentActivity {
                     sb.append(utm);
                 }
             }
-            gatherSensorsAndFinish(prefs, sb, latch, pt);
+            gatherSensorsAndFinish(prefs, sb, latch, pt, rawFix);
         } else if (System.currentTimeMillis() < deadline) {
             h.postDelayed(() -> pollLocation(lh, deadline, prefs, sb, latch), 500);
         } else {
             lh.stopLocationUpdates();
-            gatherSensorsAndFinish(prefs, sb, latch, null);
+            gatherSensorsAndFinish(prefs, sb, latch, null, null);
         }
     }
 
     private void gatherSensorsAndFinish(SharedPreferencesManager prefs, StringBuilder sb,
                                          java.util.concurrent.CountDownLatch latch) {
-        gatherSensorsAndFinish(prefs, sb, latch, null);
+        gatherSensorsAndFinish(prefs, sb, latch, null, null);
     }
 
     private void gatherSensorsAndFinish(SharedPreferencesManager prefs, StringBuilder sb,
                                          java.util.concurrent.CountDownLatch latch,
                                          org.osmdroid.util.GeoPoint liveLocation) {
+        gatherSensorsAndFinish(prefs, sb, latch, liveLocation, null);
+    }
+
+    private void gatherSensorsAndFinish(SharedPreferencesManager prefs, StringBuilder sb,
+                                         java.util.concurrent.CountDownLatch latch,
+                                         org.osmdroid.util.GeoPoint liveLocation,
+                                         android.location.Location rawFix) {
         try {
             if (prefs.isSpeedEnabled() || prefs.isAltitudeEnabled() || prefs.isCompassEnabled()) {
                 com.fadcam.sensors.SensorDataProvider sdp = com.fadcam.sensors.SensorDataProvider.getInstance(getApplicationContext());
                 sdp.start(null);
+                // Feed the REAL fix (carries speed/altitude from GPS) into the
+                // provider — never a fabricated Location. If no fix is available
+                // we pass null and the provider honestly reports no speed.
+                if (rawFix != null) {
+                    sdp.updateLocation(rawFix);
+                }
                 try { Thread.sleep(400); } catch (InterruptedException ignored) {}
                 if (prefs.isSpeedEnabled()) { if (sb.length() > 0) sb.append("\n"); sb.append("Speed: ").append(String.format(java.util.Locale.US, "%.0f", sdp.getSpeedKmh())).append("km/h"); }
                 if (prefs.isAltitudeEnabled()) { if (sb.length() > 0) sb.append("\n"); sb.append("Alt: ").append(String.format(java.util.Locale.US, "%.0f", sdp.getAltitude())).append("m"); }

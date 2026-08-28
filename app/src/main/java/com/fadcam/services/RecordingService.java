@@ -261,14 +261,18 @@ public class RecordingService extends Service {
         sharedPreferencesManager = SharedPreferencesManager.getInstance(getApplicationContext());
         initializeDurationLimitController();
 
-        // Only initialize LocationHelper if location is explicitly enabled
-        if (sharedPreferencesManager != null && sharedPreferencesManager.isLocalisationEnabled()) {
+        // Initialize LocationHelper when ANY location-dependent feature is on —
+        // not just the "location watermark" toggle. If speed/altitude/accuracy/
+        // compass/weather/UTM are enabled but the location watermark is off, the
+        // GPS feed would otherwise never start and those watermarks would be
+        // stuck at 0 (the exact bug users reported).
+        if (sharedPreferencesManager != null && needsLocationData()) {
             locationHelper = new LocationHelper(this); // For watermark text
             // Also initialize geocoder for reverse geocoding (non-blocking, cached)
             // Uses Nominatim (free, open-source) - no API keys needed
             locationGeocoder = new LocationGeocoder();
         } else {
-            // location feature disabled
+            // no location-dependent feature enabled
         }
 
         // Initialize GeotagHelper only if location embedding is enabled
@@ -1594,13 +1598,9 @@ public class RecordingService extends Service {
                 if (sensorDataProvider == null) {
                     sensorDataProvider = com.fadcam.sensors.SensorDataProvider.getInstance(getApplicationContext());
                 }
-                org.osmdroid.util.GeoPoint currentLoc = locationHelper != null ? locationHelper.getCurrentLocation() : null;
-                android.location.Location androidLoc = null;
-                if (currentLoc != null) {
-                    androidLoc = new android.location.Location("manual");
-                    androidLoc.setLatitude(currentLoc.getLatitude());
-                    androidLoc.setLongitude(currentLoc.getLongitude());
-                }
+                // Seed with the REAL last fix (carries speed/altitude), not a
+                // fabricated coords-only Location. Null is fine — next fix updates it.
+                android.location.Location androidLoc = locationHelper != null ? locationHelper.getRawLocation() : null;
                 sensorDataProvider.start(androidLoc);
                 // setup log removed
             }
@@ -2650,13 +2650,10 @@ public class RecordingService extends Service {
             noiseMonitor.start(this);
         }
         if (sensorDataProvider != null) {
-            org.osmdroid.util.GeoPoint currentLoc = locationHelper != null ? locationHelper.getCurrentLocation() : null;
-            android.location.Location androidLoc = null;
-            if (currentLoc != null) {
-                androidLoc = new android.location.Location("manual");
-                androidLoc.setLatitude(currentLoc.getLatitude());
-                androidLoc.setLongitude(currentLoc.getLongitude());
-            }
+            // Seed with the REAL last fix (carries speed/altitude), not a
+            // fabricated coords-only Location. Null is fine — the next live fix
+            // updates the provider anyway.
+            android.location.Location androidLoc = locationHelper != null ? locationHelper.getRawLocation() : null;
             sensorDataProvider.start(androidLoc);
         }
         if (watermarkManager != null) watermarkManager.resumeSensors(locationHelper);
@@ -6139,7 +6136,11 @@ public class RecordingService extends Service {
                 ", embedding=" + sharedPreferencesManager.isLocationEmbeddingEnabled());
 
         // Handle LocationHelper for watermark
-        boolean locationEnabled = sharedPreferencesManager.isLocalisationEnabled();
+        // Driven by ANY location-dependent feature (speed/altitude/accuracy/
+        // compass/weather/UTM/location/embedding), not just the location
+        // watermark toggle — otherwise toggling "location watermark" off while
+        // speed stays on but thiswould kill the GPS feed and zero the speed (user bug).
+        boolean locationEnabled = needsLocationData();
         if (locationEnabled) {
             if (locationHelper == null || forceInit) {
                 try {
@@ -6226,6 +6227,25 @@ public class RecordingService extends Service {
         }
 
         FLog.d(TAG, "==== Location Helpers Reinitialization Complete ====");
+    }
+
+    /**
+     * True if any user-enabled feature needs a live GPS feed. Used to decide
+     * whether the LocationHelper must exist at all. Critically includes the
+     * extended sensor watermarks (speed/altitude/accuracy/compass) and weather,
+     * not just the "location watermark" toggle — otherwise those features starve
+     * and show 0 whenever the coordinates watermark is off.
+     */
+    private boolean needsLocationData() {
+        if (sharedPreferencesManager == null) return false;
+        return sharedPreferencesManager.isLocalisationEnabled()
+                || sharedPreferencesManager.isLocationEmbeddingEnabled()
+                || sharedPreferencesManager.isUtmEnabled()
+                || sharedPreferencesManager.isSpeedEnabled()
+                || sharedPreferencesManager.isAltitudeEnabled()
+                || sharedPreferencesManager.isAccuracyEnabled()
+                || sharedPreferencesManager.isCompassEnabled()
+                || sharedPreferencesManager.isWeatherEnabled();
     }
 
     /**
@@ -7265,7 +7285,8 @@ public class RecordingService extends Service {
                     if (location != null) {
                         latitude = (float) location.getLatitude();
                         longitude = (float) location.getLongitude();
-                        FLog.d(TAG, "Using location for SAF recording: " + latitude + ", " + longitude);
+                        FLog.d(TAG, "Using location for SAF recording: "
+                                + com.fadcam.FLog.redactedCoords(latitude, longitude));
                     }
                 } else {
                 }
@@ -7289,7 +7310,8 @@ public class RecordingService extends Service {
                     if (location != null) {
                         latitude = (float) location.getLatitude();
                         longitude = (float) location.getLongitude();
-                        FLog.d(TAG, "Using location for internal recording: " + latitude + ", " + longitude);
+                        FLog.d(TAG, "Using location for internal recording: "
+                                + com.fadcam.FLog.redactedCoords(latitude, longitude));
                     }
                 } else {
                     FLog.d(TAG, "No location available for internal recording metadata");

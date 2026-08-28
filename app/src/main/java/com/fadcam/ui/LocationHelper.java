@@ -18,20 +18,26 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class LocationHelper {
 
     private final GpsMyLocationProvider provider;
-    private GeoPoint currentLocation;
+    // volatile: written on the location callback thread, read from the
+    // watermark/GL thread — without this the reader can see a stale null even
+    // though fixes are arriving (a classic invisible-reader bug).
+    private volatile GeoPoint currentLocation;
     private final AtomicBoolean isInitializing = new AtomicBoolean(false);
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-    private long lastLocationUpdateTime = 0;
-    private Location rawLocation;
+    private volatile long lastLocationUpdateTime = 0;
+    private volatile Location rawLocation;
 
     public LocationHelper(Context context) {
         FLog.d(TAG, "LOCATION_HELPER: Initializing LocationHelper");
         provider = new GpsMyLocationProvider(context);
 
-        // Configure for very frequent updates to ensure we have location data when needed
-        provider.setLocationUpdateMinTime(300); // 300 milliseconds (0.3 seconds for more frequent updates)
+        // Standard speedometer cadence: 1000ms. GPS chipsets natively deliver
+        // ~1 Hz fixes regardless of a lower minTime, so polling at 300ms just
+        // wasted battery without producing more data. 1s matches the watermark
+        // refresh tick and is the industry-standard speedometer sample rate.
+        provider.setLocationUpdateMinTime(1000);
         provider.setLocationUpdateMinDistance(1); // 1 meter (very sensitive to movement)
-        FLog.d(TAG, "LOCATION_HELPER: Set up location provider with high-frequency updates");
+        FLog.d(TAG, "LOCATION_HELPER: Set up location provider with 1s high-frequency updates");
 
         // Start location updates immediately
         startLocationUpdates();
@@ -39,17 +45,25 @@ public class LocationHelper {
 
     public void startLocationUpdates() {
         if (provider != null && !isInitializing.getAndSet(true)) {
-            FLog.d(TAG, "🗺️ LOCATION_HELPER: Starting location updates with 300ms polling");
+            FLog.d(TAG, "🗺️ LOCATION_HELPER: Starting location updates with 1s polling");
             provider.startLocationProvider(new IMyLocationConsumer() {
                 @Override
                 public void onLocationChanged(Location location, IMyLocationProvider source) {
                     if (location != null) {
-                        rawLocation = location;
+                        // Only trust GPS/network-fused fixes that carry real motion
+                        // data. Network-only fixes (no speed, coarse accuracy)
+                        // would poison the speed/altitude computation below.
+                        String providerName = location.getProvider();
+                        boolean isGpsFix = providerName == null
+                                || android.location.LocationManager.GPS_PROVIDER.equals(providerName)
+                                || "fused".equalsIgnoreCase(providerName);
+                        if (isGpsFix) {
+                            rawLocation = location;
+                        }
                         lastLocationUpdateTime = System.currentTimeMillis();
                         currentLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
                         FLog.d(TAG, "✅ LOCATION_HELPER: GPS updated to " + 
-                            String.format("%.4f", currentLocation.getLatitude()) + ", " + 
-                            String.format("%.4f", currentLocation.getLongitude()) + 
+                            com.fadcam.FLog.redactedCoords(currentLocation.getLatitude(), currentLocation.getLongitude()) + 
                             " (accuracy: " + String.format("%.0f", location.getAccuracy()) + "m)");
                     } else {
                         FLog.w(TAG, "❌ LOCATION_HELPER: Received null location update");
@@ -76,6 +90,11 @@ public class LocationHelper {
             FLog.d(TAG, "LOCATION_HELPER: Stopping location updates");
             provider.stopLocationProvider();
         }
+        // Reset the init gate so a later startLocationUpdates() actually
+        // re-registers the provider (previously it stayed true forever after a
+        // stop, making subsequent recordings log "Provider null or already
+        // initializing" and never feed speed/altitude).
+        isInitializing.set(false);
     }
 
     /**
@@ -107,6 +126,10 @@ public class LocationHelper {
     }
 
     public Location getRawLocation() {
+        // Return the REAL fix only. Never synthesize a fake Location — a
+        // fabricated fix would carry no real speed/altitude and pollute the
+        // watermark with made-up "0 km/h" that looks genuine. Callers must treat
+        // null as "no fix yet" and fall back to an honest placeholder.
         return rawLocation;
     }
 
