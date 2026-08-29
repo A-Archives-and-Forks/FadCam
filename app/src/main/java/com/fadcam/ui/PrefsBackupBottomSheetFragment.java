@@ -68,10 +68,10 @@ public class PrefsBackupBottomSheetFragment extends BottomSheetDialogFragment {
                 if(uri!=null){
                     try {
                         JSONObject json = PreferencesBackupUtil.readJsonFromUri(requireContext(), uri);
-                        PreferencesBackupUtil.applyFromJson(requireContext(), json);
                         lastLoadedJson = json;
-                        Toast.makeText(requireContext(), getString(R.string.prefs_import_success), Toast.LENGTH_SHORT).show();
-                        restartAppUI();
+                        // Safe default: always preview before importing so the user
+                        // sees what will be loaded (and any malformed values) first.
+                        renderPreviewDialog(json);
                     } catch (Exception e){
                         Toast.makeText(requireContext(), getString(R.string.prefs_import_failed)+": "+e.getMessage(), Toast.LENGTH_LONG).show();
                     }
@@ -236,17 +236,23 @@ public class PrefsBackupBottomSheetFragment extends BottomSheetDialogFragment {
         InputActionBottomSheetFragment f = InputActionBottomSheetFragment.newPreview(getString(R.string.prefs_preview_label), json.toString());
         f.setCallbacks(new InputActionBottomSheetFragment.Callbacks() {
             @Override public void onImportConfirmed(JSONObject j) {
-                try {
-                    PreferencesBackupUtil.applyFromJson(requireContext(), j);
-                    Toast.makeText(requireContext(), getString(R.string.prefs_import_success), Toast.LENGTH_SHORT).show();
-                    restartAppUI();
-                } catch (Exception ex){
-                    Toast.makeText(requireContext(), getString(R.string.prefs_import_failed)+": "+ex.getMessage(), Toast.LENGTH_LONG).show();
-                }
+                // Import always proceeds — applyFromJson auto-repairs type
+                // mismatches (legacy Long-as-Int etc.) behind the scenes.
+                doImport(j);
             }
             @Override public void onResetConfirmed() { /* not used here */ }
         });
         f.show(getParentFragmentManager(), "preview_json_sheet");
+    }
+
+    private void doImport(JSONObject j) {
+        try {
+            PreferencesBackupUtil.applyFromJson(requireContext(), j);
+            Toast.makeText(requireContext(), getString(R.string.prefs_import_success), Toast.LENGTH_SHORT).show();
+            restartAppUI();
+        } catch (Exception ex){
+            Toast.makeText(requireContext(), getString(R.string.prefs_import_failed)+": "+ex.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private int dp(int v){

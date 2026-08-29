@@ -57,15 +57,26 @@ public class OnboardingActivity extends AppIntro {
         super.onCreate(savedInstanceState);
 
         // Make sure we don't have duplicate slides when changing language
-        // Clear any existing slides by removing them all first
+        // Clear any existing slides by removing them all first.
         try {
-            // Try to use reflection to clear slides since AppIntro doesn't expose a public
-            // method
-            java.lang.reflect.Field slidesField = com.github.appintro.AppIntro.class.getDeclaredField("fragments");
-            slidesField.setAccessible(true);
-            java.util.List<?> slides = (java.util.List<?>) slidesField.get(this);
-            if (slides != null) {
-                slides.clear();
+            // AppIntro 6.x stores slides in a private `fragments` list on its
+            // AppIntroBase parent class. getDeclaredField only searches the
+            // declared class, so walk the superclass chain until we find it.
+            java.lang.reflect.Field slidesField = null;
+            Class<?> c = com.github.appintro.AppIntro.class;
+            while (c != null && slidesField == null) {
+                try {
+                    slidesField = c.getDeclaredField("fragments");
+                } catch (NoSuchFieldException ignored) {
+                    c = c.getSuperclass();
+                }
+            }
+            if (slidesField != null) {
+                slidesField.setAccessible(true);
+                java.util.List<?> slides = (java.util.List<?>) slidesField.get(this);
+                if (slides != null) {
+                    slides.clear();
+                }
             }
         } catch (Exception e) {
             // If reflection fails, log and continue

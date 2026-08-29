@@ -204,15 +204,34 @@ public final class PreferencesBackupUtil {
             // --- LEGACY flat format (backward compat) ---
             if(v instanceof Boolean){
                 editor.putBoolean(key, (Boolean)v);
-            } else if(v instanceof Integer){
-                // JSON numbers in int range are parsed as Integer.
-                // We can't know if this was originally Long, so store as Long
-                // to prevent ClassCastException on getLong() callers.
-                editor.putLong(key, ((Integer)v).longValue());
-            } else if(v instanceof Long){
-                editor.putLong(key, (Long)v);
+            } else if(v instanceof Integer || v instanceof Long){
+                // JSON numbers lose their original type. To avoid the
+                // ClassCastException bug (legacy file stores Long, reader calls
+                // getInt), coerce to the type this app currently uses for the
+                // key — that's the ground truth of what readers expect.
+                // Unknown keys default to Long (safe for getLong readers;
+                // read-time tolerance in SharedPreferencesManager covers the
+                // rest).
+                Object current = sp.getAll().get(key);
+                long num = (v instanceof Long) ? (Long)v : ((Integer)v).longValue();
+                if(current instanceof Integer){
+                    editor.putInt(key, (int) num);
+                } else if(current instanceof Float){
+                    editor.putFloat(key, (float) num);
+                } else {
+                    editor.putLong(key, num);
+                }
             } else if(v instanceof Double){
-                editor.putString(key, String.valueOf(v));
+                Object current = sp.getAll().get(key);
+                if(current instanceof Float){
+                    editor.putFloat(key, ((Double)v).floatValue());
+                } else if(current instanceof Integer){
+                    editor.putInt(key, ((Double)v).intValue());
+                } else if(current instanceof Long){
+                    editor.putLong(key, ((Double)v).longValue());
+                } else {
+                    editor.putString(key, String.valueOf(v));
+                }
             } else if(v instanceof String){
                 editor.putString(key, (String)v);
             } else if(v instanceof JSONArray){
@@ -244,63 +263,184 @@ public final class PreferencesBackupUtil {
         return "fadcam_prefs_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date()) + ".json";
     }
 
-    /**
-     * Returns a colorized (rudimentary) HTML representation of the JSON for preview in a TextView supporting fromHtml.
-     */
-    public static String buildPreviewHtml(JSONObject json){
-        if(json==null) return "";
-        StringBuilder sb = new StringBuilder();
-        sb.append("<pre style='white-space:nowrap;'>");
-        java.util.Iterator<String> it = json.keys();
-        while(it.hasNext()){
-            String key = it.next();
-            Object v = json.opt(key);
-            sb.append("<font color='#8ab4f8'>\"").append(escape(key)).append("\"</font><font color='#ffffff'>: </font>");
+    // ── Structured preview + validation ──────────────────────────────
 
-            // Extract type and display value from either typed or legacy format
-            Object displayValue = v;
-            String displayType = typeName(v);
-            if(v instanceof JSONObject) {
-                String t = ((JSONObject)v).optString("t", "");
-                if(!t.isEmpty()) {
-                    displayValue = ((JSONObject)v).opt("v");
-                    displayType = typeNameForTag(t);
-                }
-            }
+    /** Status of a single preference entry in an import file. */
+    public enum EntryStatus {
+        OK,          // will import cleanly with the correct type
+        WARN,        // importable, but the stored type may differ from what readers expect
+        ERROR        // malformed / will likely crash a getter or is unreadable
+    }
 
-            if(displayValue instanceof JSONArray){
-                sb.append("<font color='#c792ea'>[");
-                JSONArray arr = (JSONArray)displayValue;
-                for(int i=0;i<arr.length();i++){
-                    if(i>0) sb.append(", ");
-                    sb.append(colorizeValue(arr.opt(i)));
-                }
-                sb.append("]</font>");
-                sb.append(typeSuffix("Set<String>"));
-            } else {
-                sb.append(colorizeValue(displayValue));
-                sb.append(typeSuffix(displayType));
-            }
-            if(it.hasNext()) sb.append(",");
-            sb.append("\n");
+    /** A single preference entry from an import file, rendered by the preview UI. */
+    public static final class PreviewEntry {
+        public final String key;
+        public final String type;      // human-readable type name ("Int", "Long", ...)
+        public final String value;     // display string
+        public final EntryStatus status;
+        public final String message;   // human explanation when not OK
+
+        PreviewEntry(String key, String type, String value, EntryStatus status, String message) {
+            this.key = key; this.type = type; this.value = value;
+            this.status = status; this.message = message;
         }
-        sb.append("</pre>");
-        return sb.toString();
     }
 
-    private static String colorizeValue(Object v){
-        if(v==null) return wrap("null", "#808080");
-        if(v instanceof Boolean) return wrap(String.valueOf(v), "#f28b82");
-        if(v instanceof Number) return wrap(String.valueOf(v), "#fbbc04");
-        return "<font color='#a5d6ff'>\""+escape(String.valueOf(v))+"\"</font>"; // string
+    /**
+     * Parses an import file into structured, validated preview entries.
+     * Never throws on malformed content — malformed values are reported as
+     * ERROR entries so the UI can show the problem instead of crashing.
+     *
+     * Uses the app's current prefs as the ground-truth type map: a legacy
+     * number whose key currently holds an Int will be repaired to Int on
+     * import, so it is OK. Unknown keys are flagged WARN (they default to
+     * Long, which may mismatch a getInt reader).
+     */
+    @NonNull
+    public static java.util.List<PreviewEntry> buildPreviewEntries(Context context, JSONObject root) {
+        java.util.Map<String, ?> current = null;
+        if (context != null) {
+            try {
+                current = context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE).getAll();
+            } catch (Exception ignored) {}
+        }
+        return buildPreviewEntries(root, current);
     }
 
-    private static String escape(String in){
-        return in.replace("<","&lt;").replace(">","&gt;");
+    @NonNull
+    public static java.util.List<PreviewEntry> buildPreviewEntries(JSONObject root) {
+        return buildPreviewEntries(root, null);
     }
 
-    private static String wrap(String txt, String color){
-        return "<font color='"+color+"'>"+txt+"</font>";
+    @NonNull
+    private static java.util.List<PreviewEntry> buildPreviewEntries(JSONObject root,
+                                                                     java.util.Map<String, ?> currentPrefs) {
+        java.util.List<PreviewEntry> out = new java.util.ArrayList<>();
+        if (root == null) return out;
+        java.util.Iterator<String> keys = root.keys();
+        while (keys.hasNext()) {
+            String key = keys.next();
+            if (isTransientKey(key)) continue;
+            Object v;
+            try { v = root.get(key); } catch (JSONException e) { continue; }
+
+            // Typed format: {"t": "long", "v": 5000}
+            if (v instanceof JSONObject) {
+                JSONObject entry = (JSONObject) v;
+                String t = entry.optString("t", "");
+                if (t.isEmpty()) {
+                    out.add(new PreviewEntry(key, "Object", entry.toString(), EntryStatus.ERROR,
+                            "Entry is an object without a type tag (\"t\")."));
+                    continue;
+                }
+                Object val;
+                try { val = entry.get("v"); }
+                catch (JSONException e) {
+                    out.add(new PreviewEntry(key, typeNameForTag(t), "—", EntryStatus.ERROR,
+                            "Missing value field (\"v\") for type " + t + "."));
+                    continue;
+                }
+                out.add(buildTypedEntry(key, t, val));
+                continue;
+            }
+
+            // Legacy flat format.
+            out.add(buildLegacyEntry(key, v, currentPrefs));
+        }
+        return out;
+    }
+
+    private static PreviewEntry buildTypedEntry(String key, String t, Object val) {
+        switch (t) {
+            case "bool":
+                if (val instanceof Boolean) return ok(key, "Boolean", String.valueOf(val));
+                return err(key, "Boolean", String.valueOf(val), "Expected boolean, got " + typeName(val) + ".");
+            case "int":
+                if (val instanceof Number) return ok(key, "Int", String.valueOf(val));
+                return err(key, "Int", String.valueOf(val), "Expected number, got " + typeName(val) + ".");
+            case "long":
+                if (val instanceof Number) return ok(key, "Long", String.valueOf(val));
+                return err(key, "Long", String.valueOf(val), "Expected number, got " + typeName(val) + ".");
+            case "float":
+                if (val instanceof Number) return ok(key, "Float", String.valueOf(val));
+                return err(key, "Float", String.valueOf(val), "Expected number, got " + typeName(val) + ".");
+            case "string":
+                if (val instanceof String) return ok(key, "String", (String) val);
+                // JSON non-string values are accepted by org.json as getString? No —
+                // applyFromJson uses entry.getString("v") which coerces numbers.
+                return warn(key, "String", String.valueOf(val),
+                        "Value is " + typeName(val) + ", will be stored as its string form.");
+            case "string_set": {
+                if (val instanceof JSONArray) return ok(key, "Set<String>", ((JSONArray) val).length() + " items");
+                return err(key, "Set<String>", String.valueOf(val), "Expected array, got " + typeName(val) + ".");
+            }
+            default:
+                return err(key, t, String.valueOf(val), "Unknown type tag \"" + t + "\".");
+        }
+    }
+
+    private static PreviewEntry buildLegacyEntry(String key, Object v, java.util.Map<String, ?> currentPrefs) {
+        if (v instanceof Boolean) return ok(key, "Boolean", String.valueOf(v));
+        if (v instanceof Integer || v instanceof Long) {
+            // The app's current type for this key is the ground truth of what
+            // readers expect. If the key is known, the import coerces to that
+            // type and repairs cleanly — OK. Unknown keys default to Long,
+            // which can mismatch a getInt reader — WARN.
+            Object current = currentPrefs != null ? currentPrefs.get(key) : null;
+            String type = current instanceof Integer ? "Int"
+                    : current instanceof Float ? "Float"
+                    : current instanceof Long ? "Long" : "Long";
+            if (current instanceof Integer || current instanceof Float || current instanceof Long) {
+                return ok(key, type, String.valueOf(v));
+            }
+            return warn(key, "Long", String.valueOf(v),
+                    "Unknown key — will be stored as Long. If any setting reads it with getInt(), it may crash. Consider re-exporting from a newer version.");
+        }
+        if (v instanceof Double || v instanceof Float) {
+            Object current = currentPrefs != null ? currentPrefs.get(key) : null;
+            if (current instanceof Float || current instanceof Integer || current instanceof Long) {
+                return ok(key, "Number", String.valueOf(v));
+            }
+            return warn(key, "Number", String.valueOf(v),
+                    "Legacy number stored as string by applyFromJson; readers expecting a number may misbehave.");
+        }
+        if (v instanceof String) return ok(key, "String", (String) v);
+        if (v instanceof JSONArray) {
+            return warn(key, "Set<String>", ((JSONArray) v).length() + " items",
+                    "Legacy array imported as string set; ordering not preserved.");
+        }
+        return err(key, "?", String.valueOf(v), "Unsupported value type " + typeName(v) + ".");
+    }
+
+    private static PreviewEntry ok(String key, String type, String value) {
+        return new PreviewEntry(key, type, value, EntryStatus.OK, "");
+    }
+    private static PreviewEntry warn(String key, String type, String value, String msg) {
+        return new PreviewEntry(key, type, value, EntryStatus.WARN, msg);
+    }
+    private static PreviewEntry err(String key, String type, String value, String msg) {
+        return new PreviewEntry(key, type, value, EntryStatus.ERROR, msg);
+    }
+
+    /** Summary counts for the preview banner. */
+    public static final class PreviewSummary {
+        public final int total, ok, warnings, errors;
+        PreviewSummary(int total, int ok, int warnings, int errors) {
+            this.total = total; this.ok = ok; this.warnings = warnings; this.errors = errors;
+        }
+        public boolean hasErrors() { return errors > 0; }
+    }
+
+    public static PreviewSummary summarize(java.util.List<PreviewEntry> entries) {
+        int ok = 0, warn = 0, err = 0;
+        for (PreviewEntry e : entries) {
+            switch (e.status) {
+                case OK: ok++; break;
+                case WARN: warn++; break;
+                case ERROR: err++; break;
+            }
+        }
+        return new PreviewSummary(entries.size(), ok, warn, err);
     }
 
     private static String typeName(Object v){
@@ -323,9 +463,5 @@ public final class PreferencesBackupUtil {
             case "string_set": return "Set<String>";
             default: return t;
         }
-    }
-
-    private static String typeSuffix(String type){
-        return " <font color='#555555'>/* "+type+" */</font>";
     }
 }

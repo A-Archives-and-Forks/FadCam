@@ -2,14 +2,10 @@ package com.fadcam.ui;
 
 import android.os.Bundle;
 import android.text.InputFilter;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -270,108 +266,162 @@ public class InputActionBottomSheetFragment extends BottomSheetDialogFragment {
 
     private void buildPreview(LinearLayout parent, String jsonStr) {
         JSONObject json = null;
-        String pretty = "";
         try {
             if (jsonStr != null) {
                 json = new JSONObject(jsonStr);
-                pretty = json.toString(2); // standard pretty print
             }
         } catch (Exception e) {
-            Toast.makeText(requireContext(), getString(R.string.prefs_import_failed) + ": " + e.getMessage(),
-                    Toast.LENGTH_LONG).show();
+            // Malformed JSON: show a clear error instead of a blank/crash.
+            TextView err = new TextView(requireContext());
+            err.setText(getString(R.string.prefs_import_failed) + "\n" + e.getMessage());
+            err.setTextColor(getResources().getColor(android.R.color.holo_red_light));
+            err.setTextSize(13f);
+            err.setPadding(dp(16), dp(12), dp(16), dp(12));
+            parent.addView(err);
+            return;
         }
-        String withLines = addLineNumbers(pretty);
-        CharSequence highlighted = colorizeJson(withLines);
-        HorizontalScrollView hsv = new HorizontalScrollView(requireContext());
-        hsv.setHorizontalScrollBarEnabled(true);
-        android.widget.ScrollView vScroll = new android.widget.ScrollView(requireContext());
-        vScroll.setVerticalScrollBarEnabled(true);
-        int fixedH = dp(240);
-        LinearLayout.LayoutParams hsvLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, fixedH);
-        TextView tv = new TextView(requireContext());
-        tv.setTypeface(android.graphics.Typeface.MONOSPACE);
-        tv.setTextSize(12f);
-        tv.setHorizontallyScrolling(true);
-        tv.setText(highlighted);
-        tv.setTextColor(getResources().getColor(android.R.color.white));
-        int pad = dp(12);
-        tv.setPadding(pad, pad, pad, pad);
-        tv.setBackgroundColor(0xFF121212);
-        vScroll.addView(tv,
-                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        hsv.addView(vScroll,
-                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        parent.addView(hsv, hsvLp);
+
+        if (json == null) {
+            Toast.makeText(requireContext(), getString(R.string.prefs_preview_none), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Simple, clean preview: list what will be imported. No warning counts,
+        // no scare text — the import auto-repairs types behind the scenes.
+        java.util.List<com.fadcam.util.PreferencesBackupUtil.PreviewEntry> entries =
+                com.fadcam.util.PreferencesBackupUtil.buildPreviewEntries(requireContext(), json);
+
+        // ── Summary chip (rounded, matches picker banner style) ──────
+        TextView summaryChip = new TextView(requireContext());
+        summaryChip.setText(getString(R.string.prefs_preview_ready, entries.size()));
+        summaryChip.setTextColor(0xFF4CAF50);
+        summaryChip.setTextSize(13f);
+        summaryChip.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        summaryChip.setPadding(dp(14), dp(10), dp(14), dp(10));
+        summaryChip.setBackgroundResource(R.drawable.picker_banner_bg);
+        LinearLayout.LayoutParams chipLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        chipLp.setMargins(dp(12), dp(10), dp(12), dp(4));
+        parent.addView(summaryChip, chipLp);
+
+        // ── Scrolling key/value list ────────────────────────────────
+        android.widget.ScrollView scroll = new android.widget.ScrollView(requireContext());
+        scroll.setVerticalScrollBarEnabled(true);
+        LinearLayout rows = new LinearLayout(requireContext());
+        rows.setOrientation(LinearLayout.VERTICAL);
+        int padH = dp(14);
+        rows.setPadding(padH, dp(4), padH, dp(4));
+
+        for (com.fadcam.util.PreferencesBackupUtil.PreviewEntry e : entries) {
+            rows.addView(previewEntryRow(e));
+        }
+
+        scroll.addView(rows, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        LinearLayout.LayoutParams scrollLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(260));
+        scrollLp.topMargin = dp(4);
+        parent.addView(scroll, scrollLp);
+
+        // Prevent the sheet from being dismissed by a fling while the preview
+        // is scrollable — otherwise scrolling the list closes the dialog.
+        lockSheetDragWhileScrolling(scroll);
+
         parent.addView(makeDivider());
+
         final JSONObject finalJson = json;
         parent.addView(actionRow(R.drawable.ic_content_copy, getString(R.string.prefs_import_label),
-                getString(R.string.prefs_import_subtitle), v -> {
+                getString(R.string.prefs_import_subtitle), false, v -> {
                     if (finalJson == null) {
-                        Toast.makeText(requireContext(), getString(R.string.prefs_preview_none), Toast.LENGTH_SHORT)
-                                .show();
+                        Toast.makeText(requireContext(), getString(R.string.prefs_preview_none), Toast.LENGTH_SHORT).show();
                         return;
                     }
+                    // Dismiss the preview sheet first so it doesn't linger over
+                    // the app after the import (which recreates the activity).
+                    try { dismiss(); } catch (Exception ignored) {}
                     if (callbacks != null) {
                         callbacks.onImportConfirmed(finalJson);
                     }
                 }));
     }
 
+    /** Builds one color-coded row: key (purple) — type chip — value (JSON-syntax colored). */
+    private View previewEntryRow(com.fadcam.util.PreferencesBackupUtil.PreviewEntry e) {
+        LinearLayout row = new LinearLayout(requireContext());
+        row.setOrientation(LinearLayout.VERTICAL);
+        row.setPadding(0, dp(3), 0, dp(3));
+
+        LinearLayout top = new LinearLayout(requireContext());
+        top.setOrientation(LinearLayout.HORIZONTAL);
+        top.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+        // Key — soft blue (dark-theme JSON key color)
+        TextView key = new TextView(requireContext());
+        key.setText(e.key);
+        key.setTypeface(key.getTypeface(), android.graphics.Typeface.BOLD);
+        key.setTextSize(13f);
+        key.setTextColor(0xFF82AAFF);
+        key.setSingleLine(true);
+        key.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        LinearLayout.LayoutParams keyLp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        top.addView(key, keyLp);
+
+        // Type chip — translucent bg, tinted text per type
+        TextView type = new TextView(requireContext());
+        type.setText(e.type);
+        type.setTextSize(10f);
+        type.setPadding(dp(6), dp(2), dp(6), dp(2));
+        type.setTextColor(valueColor(e.type, e.value));
+        type.setBackgroundResource(R.drawable.prefs_type_chip_bg);
+        type.setTypeface(type.getTypeface(), android.graphics.Typeface.BOLD);
+        top.addView(type);
+        row.addView(top);
+
+        // Value — dark-theme JSON syntax colored
+        TextView value = new TextView(requireContext());
+        value.setText(e.value);
+        value.setTextSize(12f);
+        value.setTextColor(valueColor(e.type, e.value));
+        value.setPadding(dp(0), 0, 0, 0);
+        row.addView(value);
+
+        return row;
+    }
+
     /**
-     * Apply lightweight JSON syntax highlighting over line-numbered text using
-     * existing palette colors.
+     * Dark-background JSON syntax palette (Material Ocean / One Dark inspired):
+     * keys soft blue, strings soft green, numbers coral, booleans cyan, sets
+     * light blue-gray. Deliberately avoids purple / danger red / warning yellow.
      */
-    private CharSequence colorizeJson(String text) {
-        if (text == null || text.isEmpty())
-            return text;
-        SpannableStringBuilder sb = new SpannableStringBuilder(text);
-        int cKey = getResources().getColor(R.color.colorPrimary);
-        int cString = getResources().getColor(R.color.greenPastel);
-        int cNumber = getResources().getColor(R.color.gold);
-        int cBoolean = getResources().getColor(R.color.redPastel);
-        int cNull = getResources().getColor(R.color.gray500);
-        int cPunc = getResources().getColor(android.R.color.darker_gray);
-        int cLine = getResources().getColor(R.color.gray500);
-
-        // Line numbers: start of line up to pipe
-        applyRegex(sb, "(?m)^(\\s*\\d+\\s+\\|)", cLine);
-        // Keys: "...": (highlight just the quoted name)
-        applyRegex(sb, "\\\"[^\\\"\\n]*\\\"(?=\\s*:)", cKey);
-        // String values (quoted strings not followed by colon)
-        applyRegex(sb, "\\\"[^\\\"\\n]*\\\"(?!\\s*:)", cString);
-        // Numbers
-        applyRegex(sb, "(?<=:|,|\\\\[|\\\\{)\\s*-?\\d+(?:\\\\.\\d+)?(?=\\n|,|\\\\}|\\\\])", cNumber);
-        // Booleans
-        applyRegex(sb, "(?<=:|,|\\\\[|\\\\{)\\s*(true|false)(?=\\n|,|\\\\}|\\\\])", cBoolean);
-        // null
-        applyRegex(sb, "(?<=:|,|\\\\[|\\\\{)\\s*(null)(?=\\n|,|\\\\}|\\\\])", cNull);
-        // Braces/brackets/colons/commas
-        applyRegex(sb, "[{}\\\\[\\\\]:,]", cPunc);
-        return sb;
+    private int valueColor(String type, String value) {
+        if (type == null) return 0xFFD6DEEB;
+        switch (type) {
+            case "String": return 0xFFC3E88D;          // soft green
+            case "Int":
+            case "Long":
+            case "Float":
+            case "Number": return 0xFFF78C6C;          // soft coral
+            case "Boolean": return 0xFF89DDFF;         // cyan
+            case "Set<String>": return 0xFFD6DEEB;     // light blue-gray
+            default: return 0xFFD6DEEB;
+        }
     }
 
-    private void applyRegex(SpannableStringBuilder sb, String pattern, int color) {
+    /**
+     * While the inner ScrollView is scrolled down (content above), the sheet
+     * must not be draggable — otherwise a scroll fling dismisses the dialog.
+     * When the scroll is back at the very top, the sheet becomes draggable
+     * again so the user can still swipe it down to close.
+     */
+    private void lockSheetDragWhileScrolling(android.widget.ScrollView scroll) {
         try {
-            java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
-            java.util.regex.Matcher m = p.matcher(sb);
-            while (m.find()) {
-                sb.setSpan(new ForegroundColorSpan(color), m.start(), m.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            }
-        } catch (Exception ignore) {
-        }
-    }
-
-    private String addLineNumbers(String text) {
-        if (text == null || text.isEmpty())
-            return "";
-        String[] lines = text.split("\n");
-        int digits = (int) Math.floor(Math.log10(Math.max(1, lines.length))) + 1;
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < lines.length; i++) {
-            int lineNo = i + 1;
-            sb.append(String.format(java.util.Locale.US, "%" + digits + "d | ", lineNo)).append(lines[i]).append('\n');
-        }
-        return sb.toString();
+            if (getDialog() == null) return;
+            View sheet = getDialog().findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            if (sheet == null) return;
+            com.google.android.material.bottomsheet.BottomSheetBehavior<?> behavior =
+                    com.google.android.material.bottomsheet.BottomSheetBehavior.from(sheet);
+            scroll.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) ->
+                    behavior.setDraggable(scrollY <= 0));
+        } catch (Exception ignored) {}
     }
 
     private void buildReset(LinearLayout parent, String phrase) {

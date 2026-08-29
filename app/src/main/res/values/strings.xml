@@ -729,6 +729,7 @@
     <string name="prefs_preview_label">Preview JSON</string>
     <string name="prefs_preview_subtitle">Open &amp; view a preferences file</string>
     <string name="prefs_preview_none">No JSON loaded yet</string>
+    <string name="prefs_preview_ready">%1$d settings ready to import</string>
     <string name="universal_confirm">Confirm</string>
     <string name="universal_close">Close</string>
     <string name="dialog_del_confirm">Delete</string>

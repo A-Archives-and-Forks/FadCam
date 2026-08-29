@@ -172,8 +172,12 @@ android {
         val versionName = "${defaultConfig.versionName}${buildType.versionNameSuffix.orEmpty()}"
         val flavor = if (flavorName != "default") "${flavorName}_" else ""
         outputs.all {
-            val abiType = filters.firstOrNull { it.filterType == com.android.build.OutputFile.ABI }?.identifier ?: "universal"
-            (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl).outputFileName =
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val abiType = output.filters
+                .firstOrNull { it.filterType == "ABI" }
+                ?.identifier
+                ?: "universal"
+            output.outputFileName =
                 "FadCam_${flavor}v${versionName}-${abiType}.apk"
         }
     }

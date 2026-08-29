@@ -186,7 +186,7 @@ public class SharedPreferencesManager {
      * Default: 20%
      */
     public int getBatteryWarningThreshold() {
-        return sharedPreferences.getInt(
+        return safeGetInt(
             PREF_BATTERY_WARNING_THRESHOLD,
             DEFAULT_BATTERY_WARNING_THRESHOLD
         );
@@ -212,7 +212,7 @@ public class SharedPreferencesManager {
      * Default: 5000 mAh (our tested device reference)
      */
     public int getBatteryCapacityMah() {
-        return sharedPreferences.getInt(
+        return safeGetInt(
             PREF_BATTERY_MAH,
             DEFAULT_BATTERY_MAH
         );
@@ -235,7 +235,7 @@ public class SharedPreferencesManager {
 
     /** Returns whether playback should start muted by default. Default: false (unmuted). */
     public boolean isPlaybackMuted() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_PLAYBACK_MUTED,
             false
         );
@@ -284,7 +284,7 @@ public class SharedPreferencesManager {
      */
     public boolean isAppLockSessionUnlocked() {
         if (sessionUnlockedCache) return true;
-        sessionUnlockedCache = sharedPreferences.getBoolean(
+        sessionUnlockedCache = safeGetBoolean(
             KEY_APPLOCK_SESSION_UNLOCKED,
             false
         );
@@ -343,7 +343,7 @@ public class SharedPreferencesManager {
      * Applies to preview + recorded video output for front camera only.
      */
     public boolean isFrontVideoMirrorEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_FRONT_VIDEO_MIRROR_ENABLED,
             false
         );
@@ -365,7 +365,7 @@ public class SharedPreferencesManager {
      * falls back to OFF on devices that don't expose stabilization modes.
      */
     public boolean isVideoStabilizationEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_VIDEO_STABILIZATION_ENABLED,
             true
         );
@@ -385,7 +385,7 @@ public class SharedPreferencesManager {
      * microphone signal (UNPROCESSED, falling back to VOICE_RECOGNITION).
      */
     public boolean isRawAudioEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_RAW_AUDIO_ENABLED,
             false
         );
@@ -400,7 +400,7 @@ public class SharedPreferencesManager {
 
     /** Realtime audio mute state for the home quick action (default off = audio on). */
     public boolean isAudioMuted() {
-        return sharedPreferences.getBoolean(Constants.PREF_AUDIO_MUTED, false);
+        return safeGetBoolean(Constants.PREF_AUDIO_MUTED, false);
     }
 
     public void setAudioMuted(boolean muted) {
@@ -457,7 +457,7 @@ public class SharedPreferencesManager {
 
     /** How many of the top of the sidebar mini apps order are shown (1..11). */
     public int getSidebarMiniAppsCount() {
-        return sharedPreferences.getInt(
+        return safeGetInt(
             Constants.PREF_SIDEBAR_MINI_APPS_COUNT,
             Constants.DEFAULT_SIDEBAR_MINI_APPS_COUNT
         );
@@ -472,11 +472,11 @@ public class SharedPreferencesManager {
 
     public Size getCameraResolution() {
         return new Size(
-            sharedPreferences.getInt(
+            safeGetInt(
                 Constants.PREF_VIDEO_RESOLUTION_WIDTH,
                 Constants.DEFAULT_VIDEO_RESOLUTION.getWidth()
             ),
-            sharedPreferences.getInt(
+            safeGetInt(
                 Constants.PREF_VIDEO_RESOLUTION_HEIGHT,
                 Constants.DEFAULT_VIDEO_RESOLUTION.getHeight()
             )
@@ -491,7 +491,7 @@ public class SharedPreferencesManager {
         if (sharedPreferences.contains(Constants.PREF_VIDEO_FRAME_RATE_BACK)) {
             return getSpecificVideoFrameRate(CameraType.BACK);
         }
-        return sharedPreferences.getInt(
+        return safeGetInt(
             Constants.PREF_VIDEO_FRAME_RATE,
             Constants.DEFAULT_VIDEO_FRAME_RATE
         );
@@ -515,7 +515,7 @@ public class SharedPreferencesManager {
 
         // 1. Check if the specific key exists
         if (sharedPreferences.contains(specificKey)) {
-            return sharedPreferences.getInt(
+            return safeGetInt(
                 specificKey,
                 Constants.DEFAULT_VIDEO_FRAME_RATE
             );
@@ -523,7 +523,7 @@ public class SharedPreferencesManager {
         // 2. Specific key doesn't exist, check if the OLD generic key exists (for
         // migration)
         else if (sharedPreferences.contains(Constants.PREF_VIDEO_FRAME_RATE)) {
-            int oldGenericValue = sharedPreferences.getInt(
+            int oldGenericValue = safeGetInt(
                 Constants.PREF_VIDEO_FRAME_RATE,
                 Constants.DEFAULT_VIDEO_FRAME_RATE
             );
@@ -583,7 +583,7 @@ public class SharedPreferencesManager {
 
         // Check if the specific key exists
         if (sharedPreferences.contains(specificKey)) {
-            return sharedPreferences.getFloat(
+            return safeGetFloat(
                 specificKey,
                 getDefaultZoomRatioForCamera(cameraType)
             );
@@ -779,13 +779,13 @@ public class SharedPreferencesManager {
     /** Returns the saved pan-X offset (-1.0…+1.0) for the given camera. Default: 0.0 (centre). */
     public float getSpecificPanX(CameraType cameraType) {
         String key = (cameraType == CameraType.FRONT) ? Constants.PREF_PAN_X_FRONT : Constants.PREF_PAN_X_BACK;
-        return sharedPreferences.getFloat(key, 0.0f);
+        return safeGetFloat(key, 0.0f);
     }
 
     /** Returns the saved pan-Y offset (-1.0…+1.0) for the given camera. Default: 0.0 (centre). */
     public float getSpecificPanY(CameraType cameraType) {
         String key = (cameraType == CameraType.FRONT) ? Constants.PREF_PAN_Y_FRONT : Constants.PREF_PAN_Y_BACK;
-        return sharedPreferences.getFloat(key, 0.0f);
+        return safeGetFloat(key, 0.0f);
     }
 
     /** Persists pan offsets for the given camera. */
@@ -807,7 +807,7 @@ public class SharedPreferencesManager {
 
     /** Returns whether the video player should keep the screen on during playback. Default: true. */
     public boolean isPlayerKeepScreenOn() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_PLAYER_KEEP_SCREEN_ON,
             true
         );
@@ -856,7 +856,7 @@ public class SharedPreferencesManager {
      * Defaults to Constants.DEFAULT_PLAYER_SEEK_SECONDS.
      */
     public int getPlayerSeekSeconds() {
-        return sharedPreferences.getInt(
+        return safeGetInt(
             PREF_KEY_PLAYER_SEEK_SECONDS,
             Constants.DEFAULT_PLAYER_SEEK_SECONDS
         );
@@ -882,7 +882,7 @@ public class SharedPreferencesManager {
      * 0 = never auto-hide. Defaults to Constants.DEFAULT_PLAYER_CONTROLS_TIMEOUT_SECONDS.
      */
     public int getPlayerControlsTimeoutSeconds() {
-        return sharedPreferences.getInt(
+        return safeGetInt(
             PREF_KEY_PLAYER_CONTROLS_TIMEOUT_SECONDS,
             Constants.DEFAULT_PLAYER_CONTROLS_TIMEOUT_SECONDS
         );
@@ -904,7 +904,7 @@ public class SharedPreferencesManager {
 
     /** Returns whether background playback is enabled. Default: false. */
     public boolean isBackgroundPlaybackEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_PLAYER_BACKGROUND_PLAYBACK,
             false
         );
@@ -920,7 +920,7 @@ public class SharedPreferencesManager {
 
     /** Returns whether fullscreen preview tap-to-focus is enabled. Default: true. */
     public boolean isFullscreenTapToFocusEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_FULLSCREEN_TAP_TO_FOCUS_ENABLED,
             true
         );
@@ -936,7 +936,7 @@ public class SharedPreferencesManager {
 
     /** Returns whether home preview quick action icons stay visible while idle. Default: true. */
     public boolean isPreviewQuickActionsAlwaysVisible() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_PREVIEW_QUICK_ACTIONS_ALWAYS_VISIBLE,
             true
         );
@@ -953,7 +953,7 @@ public class SharedPreferencesManager {
     // -------------- Volume shutter (volume keys as camera shutter) --------------
     /** Returns whether volume keys act as a shutter while the home screen is open. Default: true. */
     public boolean isVolumeShutterEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_VOLUME_SHUTTER_ENABLED,
             true
         );
@@ -970,7 +970,7 @@ public class SharedPreferencesManager {
     // -------------- Background playback auto-stop timer (in seconds) --------------
     /** Returns the auto-stop time in seconds. 0 = disabled. Default: 0. */
     public int getBackgroundPlaybackTimerSeconds() {
-        return sharedPreferences.getInt(
+        return safeGetInt(
             Constants.PREF_PLAYER_BACKGROUND_TIMER_SECONDS,
             0
         );
@@ -986,11 +986,73 @@ public class SharedPreferencesManager {
 
     /** Convenience get/put for long values. */
     public long getLong(String key, long defValue) {
-        return sharedPreferences.getLong(key, defValue);
+        return safeGetLong(key, defValue);
     }
 
     public void putLong(String key, long value) {
         sharedPreferences.edit().putLong(key, value).apply();
+    }
+
+    // ── Type-safe getters ─────────────────────────────────────────────
+    // SharedPreferences throws ClassCastException if the STORED type differs
+    // from the requested type (e.g. a legacy import stored a Long but a reader
+    // calls getInt). These helpers read the raw value and coerce instead of
+    // crashing, so old/malformed preference files can never block the app.
+
+    public int safeGetInt(String key, int defValue) {
+        try {
+            Object v = sharedPreferences.getAll().get(key);
+            if (v instanceof Integer) return (Integer) v;
+            if (v instanceof Long) return ((Long) v).intValue();
+            if (v instanceof Float) return ((Float) v).intValue();
+            if (v instanceof String) {
+                try { return Integer.parseInt((String) v); } catch (NumberFormatException ignored) {}
+            }
+            return defValue;
+        } catch (Exception e) {
+            return defValue;
+        }
+    }
+
+    public long safeGetLong(String key, long defValue) {
+        try {
+            Object v = sharedPreferences.getAll().get(key);
+            if (v instanceof Long) return (Long) v;
+            if (v instanceof Integer) return ((Integer) v).longValue();
+            if (v instanceof Float) return ((Float) v).longValue();
+            if (v instanceof String) {
+                try { return Long.parseLong((String) v); } catch (NumberFormatException ignored) {}
+            }
+            return defValue;
+        } catch (Exception e) {
+            return defValue;
+        }
+    }
+
+    public float safeGetFloat(String key, float defValue) {
+        try {
+            Object v = sharedPreferences.getAll().get(key);
+            if (v instanceof Float) return (Float) v;
+            if (v instanceof Integer) return ((Integer) v).floatValue();
+            if (v instanceof Long) return ((Long) v).floatValue();
+            if (v instanceof String) {
+                try { return Float.parseFloat((String) v); } catch (NumberFormatException ignored) {}
+            }
+            return defValue;
+        } catch (Exception e) {
+            return defValue;
+        }
+    }
+
+    public boolean safeGetBoolean(String key, boolean defValue) {
+        try {
+            Object v = sharedPreferences.getAll().get(key);
+            if (v instanceof Boolean) return (Boolean) v;
+            if (v instanceof String) return Boolean.parseBoolean((String) v);
+            return defValue;
+        } catch (Exception e) {
+            return defValue;
+        }
     }
 
     // --- Resume position helpers ---
@@ -1004,7 +1066,7 @@ public class SharedPreferencesManager {
     public long getSavedPlaybackPositionMs(String uriString) {
         if (uriString == null) return 0L;
         String key = PREF_KEY_VIDEO_POS_PREFIX + uriString;
-        return sharedPreferences.getLong(key, 0L);
+        return safeGetLong(key, 0L);
     }
 
     /**
@@ -1034,7 +1096,7 @@ public class SharedPreferencesManager {
     public long getSavedPlaybackPositionMsByFilename(String filename) {
         if (filename == null) return 0L;
         String key = PREF_KEY_VIDEO_POS_FILENAME_PREFIX + filename;
-        return sharedPreferences.getLong(key, 0L);
+        return safeGetLong(key, 0L);
     }
 
     /**
@@ -1093,7 +1155,7 @@ public class SharedPreferencesManager {
 
     // --- Quick speed preference for press-and-hold fast playback ---
     public float getQuickSpeed() {
-        return sharedPreferences.getFloat(
+        return safeGetFloat(
             Constants.PREF_QUICK_SPEED,
             Constants.DEFAULT_QUICK_SPEED
         );
@@ -1108,7 +1170,7 @@ public class SharedPreferencesManager {
 
     // --- Audio waveform visualization preference ---
     public boolean isAudioWaveformEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             "pref_audio_waveform_enabled",
             true
         ); // Default enabled
@@ -1127,7 +1189,7 @@ public class SharedPreferencesManager {
 
     /** Returns whether thumbnails should be hidden in Records list. Default: false. */
     public boolean isHideThumbnailsEnabled() {
-        return sharedPreferences.getBoolean(PREF_KEY_HIDE_THUMBNAILS, false);
+        return safeGetBoolean(PREF_KEY_HIDE_THUMBNAILS, false);
     }
 
     /** Sets whether thumbnails should be hidden in Records list. */
@@ -1144,7 +1206,7 @@ public class SharedPreferencesManager {
 
     /** Returns whether thumbnails should be hidden in Lab gallery. Default: false. */
     public boolean isLabHideThumbnailsEnabled() {
-        return sharedPreferences.getBoolean(PREF_KEY_LAB_HIDE_THUMBNAILS, false);
+        return safeGetBoolean(PREF_KEY_LAB_HIDE_THUMBNAILS, false);
     }
 
     /** Sets whether thumbnails should be hidden in Lab gallery. */
@@ -1161,7 +1223,7 @@ public class SharedPreferencesManager {
 
     /** Returns the persisted Lab gallery grid span (columns), clamped to 1-5. Default: 2. */
     public int getLabGridSpan() {
-        int span = sharedPreferences.getInt(PREF_KEY_LAB_GRID_SPAN, 2);
+        int span = safeGetInt(PREF_KEY_LAB_GRID_SPAN, 2);
         if (span < 1 || span > 5) span = 2;
         return span;
     }
@@ -1173,25 +1235,25 @@ public class SharedPreferencesManager {
     }
 
     public boolean isLocalisationEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_LOCATION_DATA,
             false
         );
     }
 
     public boolean isLocationEmbeddingEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_EMBED_LOCATION_DATA,
             false
         );
     }
 
     public boolean isDebugLoggingEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_DEBUG_DATA, false);
+        return safeGetBoolean(Constants.PREF_DEBUG_DATA, false);
     }
 
     public int getDebugMaxLines() {
-        return sharedPreferences.getInt(Constants.PREF_DEBUG_MAX_LINES, 5000);
+        return safeGetInt(Constants.PREF_DEBUG_MAX_LINES, 5000);
     }
 
     public String getWatermarkOption() {
@@ -1224,7 +1286,7 @@ public class SharedPreferencesManager {
      * @return Update interval in ms, default 5000ms (5 seconds)
      */
     public long getWatermarkUpdateInterval() {
-        return sharedPreferences.getLong(Constants.PREF_WATERMARK_UPDATE_INTERVAL, 5000L);
+        return safeGetLong(Constants.PREF_WATERMARK_UPDATE_INTERVAL, 5000L);
     }
 
     /**
@@ -1262,7 +1324,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isSpeedEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_WATERMARK_SPEED, false);
+        return safeGetBoolean(Constants.PREF_WATERMARK_SPEED, false);
     }
 
     public void setSpeedEnabled(boolean enabled) {
@@ -1270,7 +1332,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isAltitudeEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_WATERMARK_ALTITUDE, false);
+        return safeGetBoolean(Constants.PREF_WATERMARK_ALTITUDE, false);
     }
 
     public void setAltitudeEnabled(boolean enabled) {
@@ -1278,7 +1340,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isAccuracyEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_WATERMARK_ACCURACY, false);
+        return safeGetBoolean(Constants.PREF_WATERMARK_ACCURACY, false);
     }
 
     public void setAccuracyEnabled(boolean enabled) {
@@ -1286,7 +1348,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isCompassEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_WATERMARK_COMPASS, false);
+        return safeGetBoolean(Constants.PREF_WATERMARK_COMPASS, false);
     }
 
     public void setCompassEnabled(boolean enabled) {
@@ -1294,7 +1356,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isNoiseEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_WATERMARK_NOISE, false);
+        return safeGetBoolean(Constants.PREF_WATERMARK_NOISE, false);
     }
 
     public void setNoiseEnabled(boolean enabled) {
@@ -1302,7 +1364,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isWeatherEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_WATERMARK_WEATHER, false);
+        return safeGetBoolean(Constants.PREF_WATERMARK_WEATHER, false);
     }
 
     public void setWeatherEnabled(boolean enabled) {
@@ -1310,7 +1372,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isNetworkWarningShown() {
-        return sharedPreferences.getBoolean(Constants.PREF_WATERMARK_NETWORK_WARNING_SHOWN, false);
+        return safeGetBoolean(Constants.PREF_WATERMARK_NETWORK_WARNING_SHOWN, false);
     }
 
     public void setNetworkWarningShown(boolean shown) {
@@ -1318,7 +1380,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isTimezoneEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_WATERMARK_TIMEZONE, false);
+        return safeGetBoolean(Constants.PREF_WATERMARK_TIMEZONE, false);
     }
 
     public String getRecordsSortOption() {
@@ -1331,7 +1393,7 @@ public class SharedPreferencesManager {
 
     /** Returns the persisted Records grid span (columns), clamped to 1-5. Default: 2. */
     public int getRecordsGridSpan() {
-        int span = sharedPreferences.getInt(Constants.PREF_RECORDS_GRID_SPAN, 2);
+        int span = safeGetInt(Constants.PREF_RECORDS_GRID_SPAN, 2);
         if (span < 1 || span > 5) span = 2;
         return span;
     }
@@ -1342,7 +1404,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isWatermarkDayEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_WATERMARK_DAY, true); // default ON
+        return safeGetBoolean(Constants.PREF_WATERMARK_DAY, true); // default ON
     }
 
     public void setWatermarkDayEnabled(boolean enabled) {
@@ -1362,7 +1424,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isUtmEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_WATERMARK_UTM, false);
+        return safeGetBoolean(Constants.PREF_WATERMARK_UTM, false);
     }
 
     public void setUtmEnabled(boolean enabled) {
@@ -1370,7 +1432,7 @@ public class SharedPreferencesManager {
     }
 
     public int getAudioInputDeviceType() {
-        return sharedPreferences.getInt(Constants.PREF_AUDIO_INPUT_DEVICE_TYPE, -1);
+        return safeGetInt(Constants.PREF_AUDIO_INPUT_DEVICE_TYPE, -1);
     }
 
     public void setAudioInputDeviceType(int type) {
@@ -1388,7 +1450,7 @@ public class SharedPreferencesManager {
     // Method to retrieve the preview state
     public Boolean isPreviewEnabled() {
         // Default to true if the preference doesn't exist yet
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_IS_PREVIEW_ENABLED,
             Constants.DEFAULT_PREVIEW_ENABLED
         );
@@ -1405,7 +1467,7 @@ public class SharedPreferencesManager {
 
     // Rule-of-thirds grid overlay on the preview (default off)
     public boolean isGridLinesEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_GRID_LINES_ENABLED,
             false
         );
@@ -1426,7 +1488,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isRecordingInProgress() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_IS_RECORDING_IN_PROGRESS,
             false
         );
@@ -1440,7 +1502,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isRecordAudioEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_RECORD_AUDIO,
             Constants.DEFAULT_RECORD_AUDIO
         );
@@ -1455,7 +1517,7 @@ public class SharedPreferencesManager {
 
     // ----- Camera runtime controls persistence -----
     public int getSavedExposureCompensation() {
-        return sharedPreferences.getInt(
+        return safeGetInt(
             Constants.PREF_EXPOSURE_COMPENSATION,
             0
         );
@@ -1469,7 +1531,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isAeLockedSaved() {
-        return sharedPreferences.getBoolean(Constants.PREF_AE_LOCK, false);
+        return safeGetBoolean(Constants.PREF_AE_LOCK, false);
     }
 
     public void setSavedAeLock(boolean locked) {
@@ -1480,7 +1542,7 @@ public class SharedPreferencesManager {
     }
 
     public int getSavedAfMode() {
-        return sharedPreferences.getInt(
+        return safeGetInt(
             Constants.PREF_AF_MODE,
             android.hardware.camera2.CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO
         );
@@ -1498,11 +1560,11 @@ public class SharedPreferencesManager {
     private static final String PREF_EXPOSURE_COMP_MAX = "pref_exposure_comp_max";
 
     public int getExposureCompensationMin() {
-        return sharedPreferences.getInt(PREF_EXPOSURE_COMP_MIN, -12);
+        return safeGetInt(PREF_EXPOSURE_COMP_MIN, -12);
     }
 
     public int getExposureCompensationMax() {
-        return sharedPreferences.getInt(PREF_EXPOSURE_COMP_MAX, 12);
+        return safeGetInt(PREF_EXPOSURE_COMP_MAX, 12);
     }
 
     public void setExposureCompensationRange(int min, int max) {
@@ -1517,7 +1579,7 @@ public class SharedPreferencesManager {
 
     public float getExposureCompensationStep() {
         // Default to 1/3 EV step (most common)
-        return sharedPreferences.getFloat(PREF_EXPOSURE_COMP_STEP, 0.33f);
+        return safeGetFloat(PREF_EXPOSURE_COMP_STEP, 0.33f);
     }
 
     public void setExposureCompensationStep(float step) {
@@ -1539,7 +1601,7 @@ public class SharedPreferencesManager {
 
     /** Returns whether cloaking recents snapshot is enabled. Default: true. */
     public boolean isCloakRecentsEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             PREF_CLOAK_RECENTS_ENABLED,
             DEFAULT_CLOAK_RECENTS_ENABLED
         );
@@ -1591,7 +1653,7 @@ public class SharedPreferencesManager {
 
     // --- Audio Settings ---
     public int getAudioBitrate() {
-        return sharedPreferences.getInt(
+        return safeGetInt(
             Constants.PREF_AUDIO_BITRATE,
             Constants.DEFAULT_AUDIO_BITRATE
         );
@@ -1605,7 +1667,7 @@ public class SharedPreferencesManager {
     }
 
     public int getAudioSamplingRate() {
-        return sharedPreferences.getInt(
+        return safeGetInt(
             Constants.PREF_AUDIO_SAMPLING_RATE,
             Constants.DEFAULT_AUDIO_SAMPLING_RATE
         );
@@ -1669,7 +1731,7 @@ public class SharedPreferencesManager {
     }
 
     public int getTrashAutoDeleteMinutes() {
-        int minutes = sharedPreferences.getInt(
+        int minutes = safeGetInt(
             PREF_KEY_TRASH_AUTO_DELETE_MINUTES,
             DEFAULT_TRASH_AUTO_DELETE_MINUTES
         );
@@ -1685,14 +1747,14 @@ public class SharedPreferencesManager {
     }
 
     public boolean isShowTrashInSettings() {
-        return sharedPreferences.getBoolean(PREF_KEY_SHOW_TRASH_IN_SETTINGS, true);
+        return safeGetBoolean(PREF_KEY_SHOW_TRASH_IN_SETTINGS, true);
     }
 
     // (SharedPreferencesManager_trash_auto_delete_methods) -----
 
     // (SharedPreferencesManager_video_splitting_methods) -----
     public boolean isVideoSplittingEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             PREF_VIDEO_SPLITTING_ENABLED,
             DEFAULT_VIDEO_SPLITTING_ENABLED
         );
@@ -1706,7 +1768,7 @@ public class SharedPreferencesManager {
     }
 
     public int getVideoSplitSizeMb() {
-        return sharedPreferences.getInt(
+        return safeGetInt(
             PREF_VIDEO_SPLIT_SIZE_MB,
             DEFAULT_VIDEO_SPLIT_SIZE_MB
         );
@@ -1742,7 +1804,7 @@ public class SharedPreferencesManager {
 
     public int getCustomMaximumRecordingDurationSeconds() {
         // Migrate the legacy minutes-only key (PR #323) to seconds once.
-        int legacyMinutes = sharedPreferences.getInt(
+        int legacyMinutes = safeGetInt(
             PREF_MAX_RECORDING_DURATION_CUSTOM_MINUTES, -1);
         if (legacyMinutes >= 1) {
             int seconds = legacyMinutes * 60;
@@ -1755,7 +1817,7 @@ public class SharedPreferencesManager {
                 ? seconds
                 : MaximumRecordingDuration.DEFAULT_CUSTOM_SECONDS;
         }
-        int seconds = sharedPreferences.getInt(
+        int seconds = safeGetInt(
             PREF_MAX_RECORDING_DURATION_CUSTOM_SECONDS,
             MaximumRecordingDuration.DEFAULT_CUSTOM_SECONDS
         );
@@ -1823,7 +1885,7 @@ public class SharedPreferencesManager {
     // Using the proper constant from Constants class
     public boolean isShowOnboarding() {
         // Return true if onboarding hasn't been completed
-        boolean completed = sharedPreferences.getBoolean(
+        boolean completed = safeGetBoolean(
             Constants.COMPLETED_ONBOARDING_KEY,
             false
         );
@@ -1875,7 +1937,7 @@ public class SharedPreferencesManager {
      * @return true if app lock is enabled, false otherwise
      */
     public boolean isAppLockEnabled() {
-        return sharedPreferences.getBoolean(PREF_APP_LOCK_ENABLED, false);
+        return safeGetBoolean(PREF_APP_LOCK_ENABLED, false);
     }
 
     /**
@@ -1896,7 +1958,7 @@ public class SharedPreferencesManager {
     public static final String PREF_PRIVACY_BLACK_LONG_PRESS = "privacy_black_long_press";
 
     public boolean isPrivacyBlackModeEnabled() {
-        return sharedPreferences.getBoolean(PREF_PRIVACY_BLACK_MODE_ENABLED, false);
+        return safeGetBoolean(PREF_PRIVACY_BLACK_MODE_ENABLED, false);
     }
 
     public void setPrivacyBlackModeEnabled(boolean enabled) {
@@ -1907,7 +1969,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isPrivacyBlackSwipeUpEnabled() {
-        return sharedPreferences.getBoolean(PREF_PRIVACY_BLACK_SWIPE_UP, true);
+        return safeGetBoolean(PREF_PRIVACY_BLACK_SWIPE_UP, true);
     }
 
     public void setPrivacyBlackSwipeUpEnabled(boolean enabled) {
@@ -1915,7 +1977,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isPrivacyBlackTripleTapEnabled() {
-        return sharedPreferences.getBoolean(PREF_PRIVACY_BLACK_TRIPLE_TAP, true);
+        return safeGetBoolean(PREF_PRIVACY_BLACK_TRIPLE_TAP, true);
     }
 
     public void setPrivacyBlackTripleTapEnabled(boolean enabled) {
@@ -1923,7 +1985,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isPrivacyBlackLongPressEnabled() {
-        return sharedPreferences.getBoolean(PREF_PRIVACY_BLACK_LONG_PRESS, true);
+        return safeGetBoolean(PREF_PRIVACY_BLACK_LONG_PRESS, true);
     }
 
     public void setPrivacyBlackLongPressEnabled(boolean enabled) {
@@ -2024,7 +2086,7 @@ public class SharedPreferencesManager {
      * @return true if button should be hidden, false otherwise
      */
     public boolean isNotificationStopButtonHidden() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             PREF_HIDE_NOTIFICATION_STOP_BUTTON,
             false
         );
@@ -2187,9 +2249,9 @@ public class SharedPreferencesManager {
      * preferences.
      */
     public int getCurrentBitrate() {
-        if (sharedPreferences.getBoolean("bitrate_mode_custom", false)) {
+        if (safeGetBoolean("bitrate_mode_custom", false)) {
             return (
-                sharedPreferences.getInt("bitrate_custom_value", 16000) * 1000
+                safeGetInt("bitrate_custom_value", 16000) * 1000
             ); // stored as kbps, use bps
         } else {
             // Estimate based on resolution and framerate
@@ -2399,7 +2461,7 @@ public class SharedPreferencesManager {
 
     /** Master toggle: app-wide vibration/haptics. Default ON. */
     public boolean isHapticFeedbackEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             PREF_KEY_HAPTIC_FEEDBACK_ENABLED, true);
     }
 
@@ -2423,7 +2485,7 @@ public class SharedPreferencesManager {
     }
 
     public int getHapticStartCustomMs() {
-        return sharedPreferences.getInt(PREF_KEY_HAPTIC_START_CUSTOM_MS, 100);
+        return safeGetInt(PREF_KEY_HAPTIC_START_CUSTOM_MS, 100);
     }
 
     public void setHapticStartCustomMs(int ms) {
@@ -2446,7 +2508,7 @@ public class SharedPreferencesManager {
     }
 
     public int getHapticStopCustomMs() {
-        return sharedPreferences.getInt(PREF_KEY_HAPTIC_STOP_CUSTOM_MS, 300);
+        return safeGetInt(PREF_KEY_HAPTIC_STOP_CUSTOM_MS, 300);
     }
 
     public void setHapticStopCustomMs(int ms) {
@@ -2458,7 +2520,7 @@ public class SharedPreferencesManager {
 
     /** UI touch haptics (buttons, long-presses). Default ON. */
     public boolean isHapticUiEnabled() {
-        return sharedPreferences.getBoolean(PREF_KEY_HAPTIC_UI_ENABLED, true);
+        return safeGetBoolean(PREF_KEY_HAPTIC_UI_ENABLED, true);
     }
 
     public void setHapticUiEnabled(boolean enabled) {
@@ -2470,7 +2532,7 @@ public class SharedPreferencesManager {
 
     /** Number-picker wheel haptics. Default ON. */
     public boolean isHapticPickerEnabled() {
-        return sharedPreferences.getBoolean(PREF_KEY_HAPTIC_PICKER_ENABLED, true);
+        return safeGetBoolean(PREF_KEY_HAPTIC_PICKER_ENABLED, true);
     }
 
     public void setHapticPickerEnabled(boolean enabled) {
@@ -2494,7 +2556,7 @@ public class SharedPreferencesManager {
     }
 
     public int getHapticTorchPulse1Ms() {
-        return sharedPreferences.getInt(PREF_KEY_HAPTIC_TORCH_PULSE1_MS, 90);
+        return safeGetInt(PREF_KEY_HAPTIC_TORCH_PULSE1_MS, 90);
     }
 
     public void setHapticTorchPulse1Ms(int ms) {
@@ -2505,7 +2567,7 @@ public class SharedPreferencesManager {
     }
 
     public int getHapticTorchPulse2Ms() {
-        return sharedPreferences.getInt(PREF_KEY_HAPTIC_TORCH_PULSE2_MS, 70);
+        return safeGetInt(PREF_KEY_HAPTIC_TORCH_PULSE2_MS, 70);
     }
 
     public void setHapticTorchPulse2Ms(int ms) {
@@ -2565,7 +2627,7 @@ public class SharedPreferencesManager {
 
     /** Cast audio input device type (AudioDeviceInfo.TYPE_*), -1 = any. */
     public int getScreenRecordingAudioDeviceType() {
-        return sharedPreferences.getInt(PREF_KEY_SCREEN_AUDIO_DEVICE_TYPE, -1);
+        return safeGetInt(PREF_KEY_SCREEN_AUDIO_DEVICE_TYPE, -1);
     }
 
     public void setScreenRecordingAudioDeviceType(int type) {
@@ -2660,7 +2722,7 @@ public class SharedPreferencesManager {
     private static final String PREF_KEY_REPAIR_LAST_SCAN = "recording_repair_last_scan_v1";
 
     public long getLastRepairScanTime() {
-        return sharedPreferences.getLong(PREF_KEY_REPAIR_LAST_SCAN, 0L);
+        return safeGetLong(PREF_KEY_REPAIR_LAST_SCAN, 0L);
     }
 
     public void setLastRepairScanTime(long timeMs) {
@@ -2673,7 +2735,7 @@ public class SharedPreferencesManager {
     private static final String PREF_KEY_REPAIR_V2_RESET = "recording_repair_v3_reset_done";
 
     public boolean isRepairV2ResetDone() {
-        return sharedPreferences.getBoolean(PREF_KEY_REPAIR_V2_RESET, false);
+        return safeGetBoolean(PREF_KEY_REPAIR_V2_RESET, false);
     }
 
     public void setRepairV2ResetDone(boolean done) {
@@ -2738,7 +2800,7 @@ public class SharedPreferencesManager {
      * Gets the screen recording frame rate from preferences.
      */
     public int getScreenRecordingFrameRate() {
-        return sharedPreferences.getInt(
+        return safeGetInt(
             Constants.PREF_SCREEN_RECORDING_FPS,
             Constants.DEFAULT_SCREEN_RECORDING_FPS
         );
@@ -2757,7 +2819,7 @@ public class SharedPreferencesManager {
      * Gets the screen recording bitrate from preferences.
      */
     public int getScreenRecordingBitrate() {
-        return sharedPreferences.getInt(
+        return safeGetInt(
             Constants.PREF_SCREEN_RECORDING_BITRATE,
             Constants.DEFAULT_SCREEN_RECORDING_BITRATE
         );
@@ -2796,7 +2858,7 @@ public class SharedPreferencesManager {
      * @return true to show labels (d/h/m/s), false to hide
      */
     public boolean isScreenRecordingElapsedTimeLabelsVisible() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_SCREEN_RECORDING_ELAPSED_TIME_LABELS,
             true // Default to showing labels
         );
@@ -2818,7 +2880,7 @@ public class SharedPreferencesManager {
      * @return true if watermark is enabled
      */
     public boolean isScreenRecordingWatermarkEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_SCREEN_RECORDING_WATERMARK_ENABLED,
             false // Default to disabled
         );
@@ -2840,7 +2902,7 @@ public class SharedPreferencesManager {
      * @return true if screen recording is in progress
      */
     public boolean isScreenRecordingInProgress() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_IS_SCREEN_RECORDING_IN_PROGRESS,
             false
         );
@@ -2889,7 +2951,7 @@ public class SharedPreferencesManager {
      * Returns whether FadRec recording is currently muted.
      */
     public boolean isScreenRecordingMuted() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_SCREEN_RECORDING_MUTED,
             false
         );
@@ -2930,7 +2992,7 @@ public class SharedPreferencesManager {
 
     // -------------- Motion Lab (Advanced) Preferences Start --------------
     public boolean isMotionModeEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_MOTION_MODE_ENABLED, false);
+        return safeGetBoolean(Constants.PREF_MOTION_MODE_ENABLED, false);
     }
 
     public void setMotionModeEnabled(boolean enabled) {
@@ -2946,7 +3008,7 @@ public class SharedPreferencesManager {
     }
 
     public int getMotionSensitivity() {
-        return sharedPreferences.getInt(Constants.PREF_MOTION_SENSITIVITY, 80);
+        return safeGetInt(Constants.PREF_MOTION_SENSITIVITY, 80);
     }
 
     public void setMotionSensitivity(int value) {
@@ -2954,7 +3016,7 @@ public class SharedPreferencesManager {
     }
 
     public int getMotionAnalysisFps() {
-        int fps = sharedPreferences.getInt(Constants.PREF_MOTION_ANALYSIS_FPS, 6);
+        int fps = safeGetInt(Constants.PREF_MOTION_ANALYSIS_FPS, 6);
         return fps <= 0 ? 6 : fps;
     }
 
@@ -2963,7 +3025,7 @@ public class SharedPreferencesManager {
     }
 
     public int getMotionDebounceMs() {
-        return sharedPreferences.getInt(Constants.PREF_MOTION_DEBOUNCE_MS, 220);
+        return safeGetInt(Constants.PREF_MOTION_DEBOUNCE_MS, 220);
     }
 
     public void setMotionDebounceMs(int debounceMs) {
@@ -2971,7 +3033,7 @@ public class SharedPreferencesManager {
     }
 
     public int getMotionPostRollMs() {
-        return sharedPreferences.getInt(Constants.PREF_MOTION_POST_ROLL_MS, 10000);
+        return safeGetInt(Constants.PREF_MOTION_POST_ROLL_MS, 10000);
     }
 
     public void setMotionPostRollMs(int postRollMs) {
@@ -2979,7 +3041,7 @@ public class SharedPreferencesManager {
     }
 
     public int getMotionPreRollSeconds() {
-        return sharedPreferences.getInt(Constants.PREF_MOTION_PRE_ROLL_SECONDS, 2);
+        return safeGetInt(Constants.PREF_MOTION_PRE_ROLL_SECONDS, 2);
     }
 
     public void setMotionPreRollSeconds(int seconds) {
@@ -2995,7 +3057,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isMotionAutoTorchEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_MOTION_AUTO_TORCH_ENABLED, false);
+        return safeGetBoolean(Constants.PREF_MOTION_AUTO_TORCH_ENABLED, false);
     }
 
     public void setMotionAutoTorchEnabled(boolean enabled) {
@@ -3003,7 +3065,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isMotionDebugUiActive() {
-        return sharedPreferences.getBoolean(Constants.PREF_MOTION_DEBUG_UI_ACTIVE, false);
+        return safeGetBoolean(Constants.PREF_MOTION_DEBUG_UI_ACTIVE, false);
     }
 
     public void setMotionDebugUiActive(boolean active) {
@@ -3013,7 +3075,7 @@ public class SharedPreferencesManager {
 
     // -------------- Digital Forensics (Advanced) Preferences Start --------------
     public boolean isDigitalForensicsEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_DF_ENABLED, false);
+        return safeGetBoolean(Constants.PREF_DF_ENABLED, false);
     }
 
     public void setDigitalForensicsEnabled(boolean enabled) {
@@ -3021,7 +3083,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isDfEventPersonEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_DF_EVENT_PERSON, true);
+        return safeGetBoolean(Constants.PREF_DF_EVENT_PERSON, true);
     }
 
     public void setDfEventPersonEnabled(boolean enabled) {
@@ -3029,7 +3091,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isDfEventVehicleEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_DF_EVENT_VEHICLE, true);
+        return safeGetBoolean(Constants.PREF_DF_EVENT_VEHICLE, true);
     }
 
     public void setDfEventVehicleEnabled(boolean enabled) {
@@ -3037,7 +3099,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isDfEventPetEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_DF_EVENT_PET, true);
+        return safeGetBoolean(Constants.PREF_DF_EVENT_PET, true);
     }
 
     public void setDfEventPetEnabled(boolean enabled) {
@@ -3045,7 +3107,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isDfDangerousObjectEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_DF_EVENT_DANGEROUS_OBJECT, true);
+        return safeGetBoolean(Constants.PREF_DF_EVENT_DANGEROUS_OBJECT, true);
     }
 
     public void setDfDangerousObjectEnabled(boolean enabled) {
@@ -3053,7 +3115,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isDfOverlayEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_DF_OVERLAY_ENABLED, false);
+        return safeGetBoolean(Constants.PREF_DF_OVERLAY_ENABLED, false);
     }
 
     public void setDfOverlayEnabled(boolean enabled) {
@@ -3061,7 +3123,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isDfDailySummaryEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_DF_DAILY_SUMMARY_ENABLED, false);
+        return safeGetBoolean(Constants.PREF_DF_DAILY_SUMMARY_ENABLED, false);
     }
 
     public void setDfDailySummaryEnabled(boolean enabled) {
@@ -3069,7 +3131,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isDfHeatmapEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_DF_HEATMAP_ENABLED, false);
+        return safeGetBoolean(Constants.PREF_DF_HEATMAP_ENABLED, false);
     }
 
     public void setDfHeatmapEnabled(boolean enabled) {
@@ -3077,7 +3139,7 @@ public class SharedPreferencesManager {
     }
 
     public boolean isDfEvidenceCollectionEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_DF_EVIDENCE_ENABLED, true);
+        return safeGetBoolean(Constants.PREF_DF_EVIDENCE_ENABLED, true);
     }
 
     public void setDfEvidenceCollectionEnabled(boolean enabled) {
@@ -3108,7 +3170,7 @@ public class SharedPreferencesManager {
      * @return true if floating controls enabled, false otherwise
      */
     public boolean isFloatingControlsEnabled() {
-        return sharedPreferences.getBoolean(
+        return safeGetBoolean(
             Constants.PREF_FLOATING_CONTROLS_ENABLED,
             false // Default: disabled
         );
@@ -3185,7 +3247,7 @@ public class SharedPreferencesManager {
      * @return Last known unread count
      */
     public int getNotificationUnreadCount() {
-        return sharedPreferences.getInt("fadex_unread_count", 0);
+        return safeGetInt("fadex_unread_count", 0);
     }
 
     /**
@@ -3214,7 +3276,7 @@ public class SharedPreferencesManager {
      * @return Boolean value
      */
     public boolean getBoolean(String key, boolean defaultValue) {
-        return sharedPreferences.getBoolean(key, defaultValue);
+        return safeGetBoolean(key, defaultValue);
     }
 
     /**
@@ -3240,7 +3302,7 @@ public class SharedPreferencesManager {
      * Default: {@code false}.
      */
     public boolean isDualCameraModeEnabled() {
-        return sharedPreferences.getBoolean(Constants.PREF_DUAL_CAMERA_ENABLED, false);
+        return safeGetBoolean(Constants.PREF_DUAL_CAMERA_ENABLED, false);
     }
 
     /**
@@ -3281,9 +3343,9 @@ public class SharedPreferencesManager {
             primary = com.fadcam.dualcam.DualCameraConfig.PrimaryCamera.BACK;
         }
 
-        boolean border = sharedPreferences.getBoolean(Constants.PREF_DUAL_CAMERA_SHOW_BORDER, true);
-        boolean rounded = sharedPreferences.getBoolean(Constants.PREF_DUAL_CAMERA_ROUND_CORNERS, true);
-        int marginDp = sharedPreferences.getInt(Constants.PREF_DUAL_CAMERA_PIP_MARGIN_DP, 12);
+        boolean border = safeGetBoolean(Constants.PREF_DUAL_CAMERA_SHOW_BORDER, true);
+        boolean rounded = safeGetBoolean(Constants.PREF_DUAL_CAMERA_ROUND_CORNERS, true);
+        int marginDp = safeGetInt(Constants.PREF_DUAL_CAMERA_PIP_MARGIN_DP, 12);
 
         return new com.fadcam.dualcam.DualCameraConfig.Builder()
                 .pipPosition(pos)

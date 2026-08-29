@@ -118,7 +118,7 @@ public class UpdateCheckService {
                 while ((n = is.read(buf)) != -1) bos.write(buf, 0, n);
                 is.close();
                 String xml = bos.toString("UTF-8");
-                FLog.d(TAG, repo + " feed: " + xml.length() + " chars");
+                // Feed size is noise — not logged (was: "feed: N chars").
                 return xml;
             } finally {
                 conn.disconnect();
@@ -154,7 +154,6 @@ public class UpdateCheckService {
             }
             if (info.stableVer != null && info.betaVer != null) break;
         }
-        FLog.d(TAG, repo + " parsed: stable=" + info.stableVer + " beta=" + info.betaVer);
         return info;
     }
 
