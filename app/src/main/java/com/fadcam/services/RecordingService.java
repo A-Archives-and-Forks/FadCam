@@ -6230,22 +6230,11 @@ public class RecordingService extends Service {
     }
 
     /**
-     * True if any user-enabled feature needs a live GPS feed. Used to decide
-     * whether the LocationHelper must exist at all. Critically includes the
-     * extended sensor watermarks (speed/altitude/accuracy/compass) and weather,
-     * not just the "location watermark" toggle — otherwise those features starve
-     * and show 0 whenever the coordinates watermark is off.
+     * True if any user-enabled feature needs a live GPS feed. See
+     * {@link LocationFeedGate#needsLocationData}.
      */
     private boolean needsLocationData() {
-        if (sharedPreferencesManager == null) return false;
-        return sharedPreferencesManager.isLocalisationEnabled()
-                || sharedPreferencesManager.isLocationEmbeddingEnabled()
-                || sharedPreferencesManager.isUtmEnabled()
-                || sharedPreferencesManager.isSpeedEnabled()
-                || sharedPreferencesManager.isAltitudeEnabled()
-                || sharedPreferencesManager.isAccuracyEnabled()
-                || sharedPreferencesManager.isCompassEnabled()
-                || sharedPreferencesManager.isWeatherEnabled();
+        return LocationFeedGate.needsLocationData(sharedPreferencesManager);
     }
 
     /**

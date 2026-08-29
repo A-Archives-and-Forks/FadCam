@@ -183,6 +183,13 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    testOptions {
+        unitTests {
+            // Robolectric provides Android framework classes on the JVM.
+            isIncludeAndroidResources = true
+        }
+    }
+
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
@@ -318,10 +325,11 @@ dependencies {
 
     // Unit Testing Dependencies (Local JVM tests - fast, no device needed)
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
     testImplementation("org.mockito:mockito-core:5.2.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
     testImplementation("org.json:json:20240303")
-    
+
     // Android Instrumented Testing (runs on device/emulator)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

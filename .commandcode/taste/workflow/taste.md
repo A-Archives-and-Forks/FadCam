@@ -7,7 +7,9 @@
 - Reviews staged git changes before committing and wants guidance on whether files should be committed or gitignored rather than committing blindly. Confidence: 0.9
 - Prefers deleting useless/junk files that are not related to the app or context, keeping the repo focused on relevant content only. Confidence: 0.9
 - Considers `git commit` (and similar git operations) a "dangerous command" and avoids running it themselves; prefers the agent to execute commits and other risky git steps on request. Confidence: 0.8
+- Considers commands that alter phone/device state dangerous and never wants the app uninstalled — including as a side effect of instrumented-test runs (Gradle's connectedAndroidTest uninstalls the debug app afterward and wipes its data, which caused real data loss). Prefers test execution methods that leave the app installed (adb install -r + am instrument) over the auto-uninstalling Gradle task. Confidence: 0.95
 - Never adds `Co-authored-by` or other AI attribution trailers to git commit messages. Confidence: 0.95
 - Prefers deep, exhaustive root-cause analysis over quick fixes: dig into the source, enumerate all possible root causes and edge cases (crash, kill, stop, restart, permission revoke, etc.), and produce a comprehensive todo list so the result is robust rather than buggy. Confidence: 0.9
 - Wants log/source files read fully to the end before diagnosing, not skimmed. Confidence: 0.85
 - When given a user-reported bug or clue, verifies it against the actual code first — is it real, and did prior fixes already cover it — and traces the exact scenario end-to-end before declaring it solved or not. Confidence: 0.85
+- Wants unit tests written and run to verify that fixes hold up in edge cases (e.g., watermark/speed logic), not just a compile/build check. Confidence: 0.9
