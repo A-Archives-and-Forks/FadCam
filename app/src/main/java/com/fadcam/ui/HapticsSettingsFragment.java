@@ -44,8 +44,8 @@ public class HapticsSettingsFragment extends Fragment {
         // ── No-vibrator device: explain instead of letting the user guess ──
         boolean hasVibrator = false;
         try {
-            android.os.Vibrator vib = (android.os.Vibrator)
-                    requireContext().getSystemService(android.content.Context.VIBRATOR_SERVICE);
+            android.os.Vibrator vib = androidx.core.content.ContextCompat.getSystemService(
+                    requireContext(), android.os.Vibrator.class);
             hasVibrator = vib != null && vib.hasVibrator();
         } catch (Exception ignored) {
         }

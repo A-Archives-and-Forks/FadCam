@@ -379,7 +379,7 @@ public class WatchTrashFragment extends Fragment {
                     }
                     final Bitmap finalBmp = bmp;
                     mainHandler.post(() -> {
-                        if (finalBmp != null && holder.getAdapterPosition() == position) {
+                        if (finalBmp != null && holder.getBindingAdapterPosition() == position) {
                             holder.ivThumb.setImageBitmap(finalBmp);
                         }
                     });
@@ -388,11 +388,11 @@ public class WatchTrashFragment extends Fragment {
 
             // Action buttons
             holder.btnRestore.setOnClickListener(v -> {
-                final int pos = holder.getAdapterPosition();
+                final int pos = holder.getBindingAdapterPosition();
                 if (pos != RecyclerView.NO_ID) restoreItem(pos);
             });
             holder.btnDelete.setOnClickListener(v -> {
-                final int pos = holder.getAdapterPosition();
+                final int pos = holder.getBindingAdapterPosition();
                 if (pos != RecyclerView.NO_ID) confirmDeleteItem(pos);
             });
         }

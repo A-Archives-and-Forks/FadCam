@@ -37,7 +37,7 @@ public class IconRainView extends View {
     private int viewWidth, viewHeight;
     private Bitmap[] iconBitmaps; // Array of different app icons
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Handler handler = new Handler();
+    private final Handler handler = new Handler(android.os.Looper.getMainLooper());
     private static final int FRAME_DELAY = 20; // ms
     private static final float SPEED_MIN = 1.0f;
     private static final float SPEED_MAX = 2.2f;

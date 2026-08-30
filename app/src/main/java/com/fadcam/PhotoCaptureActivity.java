@@ -49,7 +49,7 @@ public class PhotoCaptureActivity extends ComponentActivity {
         super.onCreate(savedInstanceState);
         launchedFromShortcut = Intent.ACTION_VIEW.equals(getIntent() != null ? getIntent().getAction() : null);
         try {
-            overridePendingTransition(0, 0);
+            com.fadcam.Utils.overridePendingTransitionCompat(this, 0, 0);
             if (getWindow() != null) {
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
@@ -325,7 +325,7 @@ public class PhotoCaptureActivity extends ComponentActivity {
         if (launchedFromShortcut) {
             moveTaskToBack(true);
             try {
-                overridePendingTransition(0, 0);
+                com.fadcam.Utils.overridePendingTransitionCompat(this, 0, 0);
             } catch (Exception ignored) {
             }
         }

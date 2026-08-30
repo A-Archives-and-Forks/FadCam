@@ -47,7 +47,10 @@ public class FormFactorHelper {
     public boolean isTV() {
         if (isTV == null) {
             PackageManager pm = context.getPackageManager();
-            isTV = pm.hasSystemFeature(PackageManager.FEATURE_TELEVISION) ||
+            // FEATURE_TELEVISION is deprecated; LEANBACK is the modern marker.
+            // Keep the touchscreen-less + low-DPI heuristic as a fallback.
+            isTV = pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK) ||
+                   pm.hasSystemFeature("android.hardware.type.television") ||
                    (!pm.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN) &&
                     getScreenDensityDpi() < 300);
         }
@@ -88,11 +91,22 @@ public class FormFactorHelper {
      * Get current screen orientation.
      * @return true if landscape, false if portrait
      */
+    @SuppressWarnings("deprecation") // legacy getDefaultDisplay fallback for < API 30
     public boolean isLandscape() {
         if (isLandscape == null) {
-            Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE))
-                    .getDefaultDisplay();
-            isLandscape = display.getWidth() > display.getHeight();
+            int width, height;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                android.graphics.Rect bounds = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE))
+                        .getCurrentWindowMetrics().getBounds();
+                width = bounds.width();
+                height = bounds.height();
+            } else {
+                Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE))
+                        .getDefaultDisplay();
+                width = display.getWidth();
+                height = display.getHeight();
+            }
+            isLandscape = width > height;
         }
         return isLandscape;
     }

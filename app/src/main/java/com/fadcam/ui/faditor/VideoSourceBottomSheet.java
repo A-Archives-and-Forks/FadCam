@@ -594,7 +594,14 @@ public class VideoSourceBottomSheet extends BottomSheetDialogFragment {
                             .centerCrop()
                             .placeholder(R.drawable.ic_video_placeholder)
                             .error(R.drawable.ic_video_placeholder))
-                    .thumbnail(0.1f)
+                    .thumbnail(
+                            Glide.with(ctx)
+                                    .asBitmap()
+                                    .load(item.uri)
+                                    .apply(new RequestOptions()
+                                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                            .override(20, 13)
+                                            .centerCrop()))
                     .into(thumbView);
         } catch (Exception e) {
             FLog.w(TAG, "Error loading thumbnail for: " + item.name, e);

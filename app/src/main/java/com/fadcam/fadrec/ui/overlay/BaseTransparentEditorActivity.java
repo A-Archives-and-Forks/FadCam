@@ -59,8 +59,8 @@ public abstract class BaseTransparentEditorActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        getWindow().setStatusBarColor(0);
-        getWindow().setNavigationBarColor(0);
+        com.fadcam.util.SystemBarUtil.setStatusBarColor(getWindow(), 0);
+        com.fadcam.util.SystemBarUtil.setNavigationBarColor(getWindow(), 0);
         getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         setContentView(getLayoutResourceId());
 
@@ -160,7 +160,7 @@ public abstract class BaseTransparentEditorActivity extends AppCompatActivity {
         resultData.putString(EXTRA_RESULT_ACTION, ACTION_SAVE);
         setResult(RESULT_OK, getIntent().putExtras(resultData));
         finish();
-        overridePendingTransition(0, 0); // No animation
+        com.fadcam.Utils.overridePendingTransitionCompat(this, 0, 0); // No animation
     }
     
     /**
@@ -180,7 +180,7 @@ public abstract class BaseTransparentEditorActivity extends AppCompatActivity {
         resultData.putString(EXTRA_RESULT_ACTION, ACTION_CANCEL);
         setResult(RESULT_CANCELED, getIntent().putExtras(resultData));
         finish();
-        overridePendingTransition(0, 0); // No animation
+        com.fadcam.Utils.overridePendingTransitionCompat(this, 0, 0); // No animation
     }
     
     /**
@@ -200,6 +200,6 @@ public abstract class BaseTransparentEditorActivity extends AppCompatActivity {
         resultData.putString(EXTRA_RESULT_ACTION, ACTION_DELETE);
         setResult(RESULT_OK, getIntent().putExtras(resultData));
         finish();
-        overridePendingTransition(0, 0); // No animation
+        com.fadcam.Utils.overridePendingTransitionCompat(this, 0, 0); // No animation
     }
 }

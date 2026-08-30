@@ -203,15 +203,12 @@ public class MaterialNumberPickerBottomSheetFragment extends BottomSheetDialogFr
             }
         });
         if (dialog.getWindow() != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            dialog.getWindow().setNavigationBarColor(android.graphics.Color.BLACK);
+            com.fadcam.util.SystemBarUtil.setNavigationBarColor(dialog.getWindow(), android.graphics.Color.BLACK);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                 dialog.getWindow().setNavigationBarContrastEnforced(false);
             }
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                int flags = dialog.getWindow().getDecorView().getSystemUiVisibility();
-                dialog.getWindow().getDecorView().setSystemUiVisibility(
-                    flags & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-                );
+                com.fadcam.util.SystemBarUtil.setNavigationBarIconsLight(dialog.getWindow(), false);
             }
         }
         return dialog;
@@ -232,15 +229,14 @@ public class MaterialNumberPickerBottomSheetFragment extends BottomSheetDialogFr
         if (getActivity() != null && getActivity().getWindow() != null
                 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             android.view.Window window = getActivity().getWindow();
-            previousActivityNavBarColor = window.getNavigationBarColor();
+            previousActivityNavBarColor = com.fadcam.util.SystemBarUtil.getNavigationBarColor(window);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                 previousActivityNavContrastEnforced = window.isNavigationBarContrastEnforced();
                 window.setNavigationBarContrastEnforced(false);
             }
-            window.setNavigationBarColor(android.graphics.Color.BLACK);
+            com.fadcam.util.SystemBarUtil.setNavigationBarColor(window, android.graphics.Color.BLACK);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                int flags = window.getDecorView().getSystemUiVisibility();
-                window.getDecorView().setSystemUiVisibility(flags & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+                com.fadcam.util.SystemBarUtil.setNavigationBarIconsLight(window, false);
             }
         }
     }
@@ -251,7 +247,7 @@ public class MaterialNumberPickerBottomSheetFragment extends BottomSheetDialogFr
                 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP
                 && previousActivityNavBarColor != null) {
             android.view.Window window = getActivity().getWindow();
-            window.setNavigationBarColor(previousActivityNavBarColor);
+            com.fadcam.util.SystemBarUtil.setNavigationBarColor(window, previousActivityNavBarColor);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
                     && previousActivityNavContrastEnforced != null) {
                 window.setNavigationBarContrastEnforced(previousActivityNavContrastEnforced);
@@ -328,8 +324,8 @@ public class MaterialNumberPickerBottomSheetFragment extends BottomSheetDialogFr
         int selectedColor = 0xFFFFFFFF;
         try {
             if (getContext() != null) {
-                dividerColor = getContext().getColor(R.color.picker_divider_color);
-                selectedColor = getContext().getColor(R.color.picker_selected_text_color);
+                dividerColor = androidx.core.content.ContextCompat.getColor(getContext(), R.color.picker_divider_color);
+                selectedColor = androidx.core.content.ContextCompat.getColor(getContext(), R.color.picker_selected_text_color);
             }
         } catch (Exception ignored) {
         }
@@ -579,9 +575,8 @@ public class MaterialNumberPickerBottomSheetFragment extends BottomSheetDialogFr
                     previewBtn.setVisibility(View.VISIBLE);
                     previewBtn.setOnClickListener(v -> {
                         try {
-                            android.os.Vibrator vibrator = (android.os.Vibrator)
-                                    requireContext().getSystemService(
-                                            android.content.Context.VIBRATOR_SERVICE);
+                            android.os.Vibrator vibrator = androidx.core.content.ContextCompat.getSystemService(
+                                    requireContext(), android.os.Vibrator.class);
                             if (vibrator == null || !vibrator.hasVibrator()) {
                                 return;
                             }
@@ -591,7 +586,9 @@ public class MaterialNumberPickerBottomSheetFragment extends BottomSheetDialogFr
                                     vibrator.vibrate(android.os.VibrationEffect.createOneShot(
                                             ms, android.os.VibrationEffect.DEFAULT_AMPLITUDE));
                                 } else {
-                                    vibrator.vibrate(ms);
+                                    @SuppressWarnings("deprecation")
+                                    long msFinal = ms;
+                                    vibrator.vibrate(msFinal);
                                 }
                             }
                         } catch (Exception ignored) {

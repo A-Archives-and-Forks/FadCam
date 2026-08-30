@@ -171,11 +171,6 @@ public class GeotagHelper {
             }
             
             @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-                FLog.d(TAG, providerName + " provider status changed: " + status);
-            }
-            
-            @Override
             public void onProviderEnabled(String provider) {
                 FLog.d(TAG, providerName + " provider enabled");
             }

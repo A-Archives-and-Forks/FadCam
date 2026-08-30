@@ -149,7 +149,7 @@ public class PrefsBackupBottomSheetFragment extends BottomSheetDialogFragment {
         iconLp.setMarginEnd(dp(16));
         icon.setLayoutParams(iconLp);
         icon.setImageResource(iconRes);
-        icon.setImageTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(android.R.color.darker_gray)));
+        icon.setImageTintList(android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray)));
         row.addView(icon);
         LinearLayout text = new LinearLayout(requireContext());
         text.setOrientation(LinearLayout.VERTICAL);
@@ -157,12 +157,12 @@ public class PrefsBackupBottomSheetFragment extends BottomSheetDialogFragment {
         text.setLayoutParams(textLp);
         TextView primary = new TextView(requireContext());
         primary.setText(label);
-        primary.setTextColor(getResources().getColor(R.color.colorHeading));
+        primary.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.colorHeading));
         primary.setTypeface(primary.getTypeface(), android.graphics.Typeface.BOLD);
         primary.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 15);
         TextView secondary = new TextView(requireContext());
         secondary.setText(helper);
-        secondary.setTextColor(getResources().getColor(android.R.color.darker_gray));
+        secondary.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray));
         secondary.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12);
         text.addView(primary);
         text.addView(secondary);
@@ -172,7 +172,7 @@ public class PrefsBackupBottomSheetFragment extends BottomSheetDialogFragment {
     arrowLp.setMarginStart(dp(12));
     arrow.setLayoutParams(arrowLp);
         arrow.setImageResource(R.drawable.ic_arrow_right);
-        arrow.setImageTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(android.R.color.darker_gray)));
+        arrow.setImageTintList(android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray)));
         row.addView(arrow);
         return row;
     }

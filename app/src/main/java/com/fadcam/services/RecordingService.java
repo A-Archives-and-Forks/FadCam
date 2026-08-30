@@ -4998,7 +4998,7 @@ public class RecordingService extends Service {
         if (intent != null) {
             boolean hasSurfaceExtra = intent.hasExtra("SURFACE");
             if (hasSurfaceExtra) {
-                previewSurface = intent.getParcelableExtra("SURFACE");
+                previewSurface = com.fadcam.Utils.getParcelableExtraCompat(intent, "SURFACE", android.view.Surface.class);
             }
             boolean isFullscreenTransition = intent.getBooleanExtra("IS_FULLSCREEN_TRANSITION", false);
             boolean validOldSurface = oldPreviewSurface != null && oldPreviewSurface.isValid();

@@ -39,12 +39,7 @@ public class PrivacyBlackActivity extends Activity {
         blackView.setBackgroundColor(0xFF000000); // Solid black
         
         // Enable immersive mode
-        blackView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+        com.fadcam.util.SystemBarUtil.hideSystemBars(blackView);
 
         setContentView(blackView);
 
@@ -90,6 +85,6 @@ public class PrivacyBlackActivity extends Activity {
     private void exitPrivacyMode() {
         Toast.makeText(this, getString(com.fadcam.R.string.privacy_black_mode_disabled_toast), Toast.LENGTH_SHORT).show();
         finish();
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-    }
+        com.fadcam.Utils.overridePendingTransitionCompat(this, android.R.anim.fade_in, android.R.anim.fade_out);
+}
 }

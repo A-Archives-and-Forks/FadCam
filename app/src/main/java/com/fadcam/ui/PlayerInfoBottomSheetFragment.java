@@ -68,9 +68,9 @@ public class PlayerInfoBottomSheetFragment extends BottomSheetDialogFragment {
             // Set HTML content
             String htmlContent = getString(R.string.player_info_content);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                contentView.setText(Html.fromHtml(htmlContent, Html.FROM_HTML_MODE_LEGACY));
+                contentView.setText(android.text.Html.fromHtml(htmlContent, android.text.Html.FROM_HTML_MODE_LEGACY));
             } else {
-                contentView.setText(Html.fromHtml(htmlContent));
+                contentView.setText(android.text.Html.fromHtml(htmlContent, android.text.Html.FROM_HTML_MODE_LEGACY));
             }
 
             listContainer.addView(contentView);

@@ -106,15 +106,12 @@ public class TextInputBottomSheetFragment extends BottomSheetDialogFragment {
             }
         });
         if (dialog.getWindow() != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            dialog.getWindow().setNavigationBarColor(android.graphics.Color.BLACK);
+            com.fadcam.util.SystemBarUtil.setNavigationBarColor(dialog.getWindow(), android.graphics.Color.BLACK);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                 dialog.getWindow().setNavigationBarContrastEnforced(false);
             }
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                int flags = dialog.getWindow().getDecorView().getSystemUiVisibility();
-                dialog.getWindow().getDecorView().setSystemUiVisibility(
-                    flags & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-                );
+                com.fadcam.util.SystemBarUtil.setNavigationBarIconsLight(dialog.getWindow(), false);
             }
         }
         return dialog;
@@ -126,15 +123,14 @@ public class TextInputBottomSheetFragment extends BottomSheetDialogFragment {
         if (getActivity() != null && getActivity().getWindow() != null
                 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             android.view.Window window = getActivity().getWindow();
-            previousActivityNavBarColor = window.getNavigationBarColor();
+            previousActivityNavBarColor = com.fadcam.util.SystemBarUtil.getNavigationBarColor(window);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                 previousActivityNavContrastEnforced = window.isNavigationBarContrastEnforced();
                 window.setNavigationBarContrastEnforced(false);
             }
-            window.setNavigationBarColor(android.graphics.Color.BLACK);
+            com.fadcam.util.SystemBarUtil.setNavigationBarColor(window, android.graphics.Color.BLACK);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                int flags = window.getDecorView().getSystemUiVisibility();
-                window.getDecorView().setSystemUiVisibility(flags & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+                com.fadcam.util.SystemBarUtil.setNavigationBarIconsLight(window, false);
             }
         }
     }
@@ -145,7 +141,7 @@ public class TextInputBottomSheetFragment extends BottomSheetDialogFragment {
                 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP
                 && previousActivityNavBarColor != null) {
             android.view.Window window = getActivity().getWindow();
-            window.setNavigationBarColor(previousActivityNavBarColor);
+            com.fadcam.util.SystemBarUtil.setNavigationBarColor(window, previousActivityNavBarColor);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
                     && previousActivityNavContrastEnforced != null) {
                 window.setNavigationBarContrastEnforced(previousActivityNavContrastEnforced);

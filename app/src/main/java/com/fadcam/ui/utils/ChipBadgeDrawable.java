@@ -65,5 +65,6 @@ public class ChipBadgeDrawable extends Drawable {
 
     @Override public void setAlpha(int alpha) {}
     @Override public void setColorFilter(@Nullable ColorFilter cf) {}
-    @Override public int getOpacity() { return PixelFormat.TRANSLUCENT; }
+    @SuppressWarnings("deprecation") // Drawable.getOpacity() is deprecated
+    @Override public int getOpacity() { return android.graphics.PixelFormat.TRANSLUCENT; }
 }

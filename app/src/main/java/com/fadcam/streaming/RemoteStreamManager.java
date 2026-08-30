@@ -1062,7 +1062,8 @@ public class RemoteStreamManager {
     public boolean isTorchOn() {
         if (context != null) {
             try {
-                android.content.SharedPreferences prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(context);
+                android.content.SharedPreferences prefs = context.getSharedPreferences(
+                        com.fadcam.Constants.PREFS_NAME, android.content.Context.MODE_PRIVATE);
                 boolean torchStateFromPrefs = prefs.getBoolean(com.fadcam.Constants.PREF_TORCH_STATE, false);
                 return torchStateFromPrefs;
             } catch (Exception e) {
@@ -1767,23 +1768,19 @@ public class RemoteStreamManager {
         android.net.ConnectivityManager cm = (android.net.ConnectivityManager) 
             context.getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
         if (cm == null) return "unknown";
-        
-        android.net.NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        if (activeNetwork == null || !activeNetwork.isConnected()) {
+
+        android.net.Network network = cm.getActiveNetwork();
+        if (network == null) return "disconnected";
+        android.net.NetworkCapabilities caps = cm.getNetworkCapabilities(network);
+        if (caps == null || !caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                || !caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
             return "disconnected";
         }
-        
-        int type = activeNetwork.getType();
-        switch (type) {
-            case android.net.ConnectivityManager.TYPE_WIFI:
-                return "wifi";
-            case android.net.ConnectivityManager.TYPE_MOBILE:
-                return "mobile";
-            case android.net.ConnectivityManager.TYPE_ETHERNET:
-                return "ethernet";
-            default:
-                return "other";
-        }
+
+        if (caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI)) return "wifi";
+        if (caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR)) return "mobile";
+        if (caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET)) return "ethernet";
+        return "other";
     }
     
     /**
@@ -1795,9 +1792,13 @@ public class RemoteStreamManager {
         android.net.ConnectivityManager cm = (android.net.ConnectivityManager) 
             context.getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
         if (cm == null) return false;
-        
-        android.net.NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnected();
+
+        android.net.Network network = cm.getActiveNetwork();
+        if (network == null) return false;
+        android.net.NetworkCapabilities caps = cm.getNetworkCapabilities(network);
+        return caps != null
+                && caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                && caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED);
     }
     
     /**

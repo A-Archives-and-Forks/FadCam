@@ -117,7 +117,8 @@ public class QRScannerActivity extends AppCompatActivity {
 
         View headerBar = findViewById(R.id.qr_header_bar);
         if (headerBar != null) headerBar.setOnApplyWindowInsetsListener((v, ins) -> {
-            v.setPadding(v.getPaddingLeft(), v.getPaddingTop() + ins.getSystemWindowInsetTop(),
+            int top = ins.getInsets(android.view.WindowInsets.Type.systemBars()).top;
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop() + top,
                     v.getPaddingRight(), v.getPaddingBottom());
             return ins;
         });
@@ -152,10 +153,19 @@ public class QRScannerActivity extends AppCompatActivity {
     private void bindCamera() {
         cameraProvider.unbindAll();
         PreviewView pv = findViewById(R.id.qr_preview);
-        Preview preview = new Preview.Builder().setTargetResolution(new Size(1280,720)).build();
+        // ResolutionSelector is the modern replacement for the deprecated
+        // setTargetResolution on Preview/ImageAnalysis builders.
+        androidx.camera.core.resolutionselector.ResolutionSelector selector =
+                new androidx.camera.core.resolutionselector.ResolutionSelector.Builder()
+                        .setResolutionStrategy(
+                                new androidx.camera.core.resolutionselector.ResolutionStrategy(
+                                        new Size(1280, 720),
+                                        androidx.camera.core.resolutionselector.ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER))
+                        .build();
+        Preview preview = new Preview.Builder().setResolutionSelector(selector).build();
         preview.setSurfaceProvider(pv.getSurfaceProvider());
         ImageAnalysis analysis = new ImageAnalysis.Builder()
-                .setTargetResolution(new Size(1280,720))
+                .setResolutionSelector(selector)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build();
         analysis.setAnalyzer(cameraExecutor, this::analyzeFrame);

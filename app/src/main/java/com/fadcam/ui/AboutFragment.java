@@ -145,7 +145,9 @@ public class AboutFragment extends BaseFragment {
             String packageName = requireContext().getPackageName();
             PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
             String versionName = packageInfo.versionName;
-            int versionCode = packageInfo.versionCode;
+            long versionCode = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P
+                    ? packageInfo.getLongVersionCode()
+                    : (@SuppressWarnings("deprecation") int) packageInfo.versionCode;
             
             // Format: "Version Name (versionCode)\npackage.name"
             String versionText = getString(R.string.version_format, versionName) + " (" + versionCode + ")\n" + packageName;
@@ -736,7 +738,7 @@ public class AboutFragment extends BaseFragment {
                 Drawable[] emailDrawables = emailText.getCompoundDrawablesRelative();
                 if (emailDrawables[0] != null) { // Start drawable
                     Drawable emailIcon = emailDrawables[0].mutate(); // Create a mutable copy
-                    emailIcon.setColorFilter(Color.BLACK, android.graphics.PorterDuff.Mode.SRC_IN);
+                    emailIcon.setTint(Color.BLACK);
                     emailText.setCompoundDrawablesRelativeWithIntrinsicBounds(emailIcon, null, null, null);
                 }
                 emailText.setTextColor(Color.BLACK);

@@ -49,3 +49,4 @@ extras/*
 TASKS.md
 feedback.md
 tasks/*
+.commandcode/settings.json

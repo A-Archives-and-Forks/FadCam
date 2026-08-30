@@ -37,7 +37,7 @@ public class PalestineRainView extends View {
     private int viewWidth, viewHeight;
     private Bitmap iconBitmap;
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Handler handler = new Handler();
+    private final Handler handler = new Handler(android.os.Looper.getMainLooper());
     private static final int FRAME_DELAY = 24; // ms - slightly slower animation
     private static final float SPEED_MIN = 2.0f; // slower minimum speed
     private static final float SPEED_MAX = 4.5f; // slower maximum speed

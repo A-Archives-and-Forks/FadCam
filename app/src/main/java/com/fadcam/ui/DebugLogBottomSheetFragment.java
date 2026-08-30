@@ -90,7 +90,7 @@ public class DebugLogBottomSheetFragment extends BottomSheetDialogFragment {
         if (list == null) return;
         list.removeAllViews();
 
-        iconGrayEnabled = getResources().getColor(android.R.color.darker_gray);
+        iconGrayEnabled = androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray);
         matchColor = 0x66FFFF00;
         currentMatchColor = resolveAccentColor();
 
@@ -169,7 +169,7 @@ public class DebugLogBottomSheetFragment extends BottomSheetDialogFragment {
         searchEdit.setBackgroundResource(R.drawable.prefs_input_bg);
         int pad = dp(10);
         searchEdit.setPadding(pad, pad, pad, pad);
-        searchEdit.setTextColor(getResources().getColor(android.R.color.white));
+        searchEdit.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.white));
         searchEdit.setHintTextColor(0xFF777777);
         searchEdit.setSingleLine(true);
         searchEdit.setMaxLines(1);
@@ -301,11 +301,11 @@ public class DebugLogBottomSheetFragment extends BottomSheetDialogFragment {
         TextView primary = new TextView(requireContext());
         primary.setText(title);
         primary.setTypeface(primary.getTypeface(), android.graphics.Typeface.BOLD);
-        primary.setTextColor(getResources().getColor(R.color.colorHeading));
+        primary.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.colorHeading));
         primary.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 15);
         TextView secondary = new TextView(requireContext());
         secondary.setText(subtitle);
-        secondary.setTextColor(getResources().getColor(android.R.color.darker_gray));
+        secondary.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray));
         secondary.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12);
         text.addView(primary); text.addView(secondary); row.addView(text);
         android.widget.ImageView arrow = new android.widget.ImageView(requireContext());
@@ -313,7 +313,7 @@ public class DebugLogBottomSheetFragment extends BottomSheetDialogFragment {
     arrowLp.setMarginStart(dp(12)); // value-to-arrow breathing room
     arrow.setLayoutParams(arrowLp);
         arrow.setImageResource(R.drawable.ic_arrow_right);
-        arrow.setImageTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(android.R.color.darker_gray)));
+        arrow.setImageTintList(android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray)));
         row.addView(arrow);
     return row;
     }
@@ -330,7 +330,7 @@ public class DebugLogBottomSheetFragment extends BottomSheetDialogFragment {
         TextView label = new TextView(requireContext());
         label.setText(getString(R.string.setting_debug_title));
         label.setTypeface(label.getTypeface(), android.graphics.Typeface.BOLD);
-        label.setTextColor(getResources().getColor(R.color.colorHeading));
+        label.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.colorHeading));
         label.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 15);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         row.addView(label, lp);
@@ -547,7 +547,7 @@ public class DebugLogBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     private class LogAdapter extends RecyclerView.Adapter<LogAdapter.VH>{
-        private final int grey = getResources().getColor(android.R.color.darker_gray);
+        private final int grey = androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray);
         private final int colorError = 0xFFDC2626;
         private final int colorWarn  = 0xFFD97706;
         private final int colorDebug = 0xFF5B9BD5;
@@ -558,7 +558,7 @@ public class DebugLogBottomSheetFragment extends BottomSheetDialogFragment {
         void setQuery(String q){ this.query = q==null?"":q; notifyDataSetChanged(); }
         @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType){
             TextView tv = new TextView(parent.getContext());
-            tv.setTextColor(getResources().getColor(android.R.color.white));
+            tv.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.white));
             tv.setTypeface(android.graphics.Typeface.MONOSPACE);
             tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12);
             return new VH(tv);

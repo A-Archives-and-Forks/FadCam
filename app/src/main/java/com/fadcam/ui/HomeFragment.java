@@ -35,7 +35,6 @@ import android.os.PowerManager;
 import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
-import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
@@ -212,7 +211,7 @@ public class HomeFragment extends BaseFragment {
     private double latitude;
     private double longitude;
 
-    private Handler handlerClock = new Handler();
+    private Handler handlerClock = new Handler(android.os.Looper.getMainLooper());
     private Runnable updateInfoRunnable;
     private Runnable updateClockRunnable; // Declare here
     private boolean clockUpdatesRunning;
@@ -228,7 +227,7 @@ public class HomeFragment extends BaseFragment {
     private View pausedPreviewOverlay;
     private GridOverlayView gridOverlay;
 
-    private Handler tipHandler = new Handler();
+    private Handler tipHandler = new Handler(android.os.Looper.getMainLooper());
     private int typingIndex = 0;
     private boolean isTypingIn = true;
     private String currentTip = "";
@@ -2493,10 +2492,8 @@ public class HomeFragment extends BaseFragment {
                 public void onReceive(Context context, Intent i) {
                     if (!isAdded() || i == null) return;
                     // Get the state reported by the service
-                    RecordingState serviceState =
-                        (RecordingState) i.getSerializableExtra(
-                            Constants.INTENT_EXTRA_RECORDING_STATE
-                        );
+                    RecordingState serviceState = com.fadcam.Utils.getSerializableExtraCompat(
+                            i, Constants.INTENT_EXTRA_RECORDING_STATE, RecordingState.class);
                     isPreviewOnlyActive = i.getBooleanExtra(
                         Constants.EXTRA_PREVIEW_ONLY_ACTIVE,
                         false
@@ -3857,7 +3854,7 @@ public class HomeFragment extends BaseFragment {
                     )
                 );
             } else {
-                vibrator.vibrate(50);
+                vibrator.vibrate(android.os.VibrationEffect.createOneShot(50, android.os.VibrationEffect.DEFAULT_AMPLITUDE));
             }
         }
     }
@@ -3875,9 +3872,7 @@ public class HomeFragment extends BaseFragment {
             return;
         }
         // Haptic Feedback
-        Vibrator vibrator = (Vibrator) requireContext().getSystemService(
-            Context.VIBRATOR_SERVICE
-        );
+        Vibrator vibrator = androidx.core.content.ContextCompat.getSystemService(requireContext(), Vibrator.class);
         if (vibrator != null && vibrator.hasVibrator()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 VibrationEffect effect = null;
@@ -3896,7 +3891,7 @@ public class HomeFragment extends BaseFragment {
                 }
                 vibrator.vibrate(effect);
             } else {
-                vibrator.vibrate(50);
+                vibrator.vibrate(android.os.VibrationEffect.createOneShot(50, android.os.VibrationEffect.DEFAULT_AMPLITUDE));
             }
         }
     }
@@ -4535,9 +4530,7 @@ public class HomeFragment extends BaseFragment {
         );
         // styling -----
 
-        vibrator = (Vibrator) requireActivity().getSystemService(
-            Context.VIBRATOR_SERVICE
-        );
+        vibrator = androidx.core.content.ContextCompat.getSystemService(requireActivity(), Vibrator.class);
         TorchService.setHomeFragment(this);
 
         // Add this debug code
@@ -9610,7 +9603,7 @@ public class HomeFragment extends BaseFragment {
 
         // Read torch source preferences
         android.content.SharedPreferences torchPrefs =
-                android.preference.PreferenceManager.getDefaultSharedPreferences(getContext());
+                getContext().getSharedPreferences(com.fadcam.Constants.PREFS_NAME, android.content.Context.MODE_PRIVATE);
         String torchSource = torchPrefs.getString(Constants.PREF_SELECTED_TORCH_SOURCE, null);
         boolean bothTorches = torchPrefs.getBoolean(Constants.PREF_BOTH_TORCHES_ENABLED, false);
 
@@ -9643,7 +9636,7 @@ public class HomeFragment extends BaseFragment {
             cameraManager.setTorchMode(targetCameraId, isTorchOn);
 
             // Update SharedPreferences so RemoteStreamManager can read current torch state
-            android.content.SharedPreferences prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(getContext());
+            android.content.SharedPreferences prefs = getContext().getSharedPreferences(com.fadcam.Constants.PREFS_NAME, android.content.Context.MODE_PRIVATE);
             prefs.edit()
                 .putBoolean(Constants.PREF_TORCH_STATE, isTorchOn)
                 .apply();
@@ -9704,7 +9697,7 @@ public class HomeFragment extends BaseFragment {
                 cameraManager.setTorchMode(frontId, isTorchOn);
             }
 
-            android.content.SharedPreferences prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(getContext());
+            android.content.SharedPreferences prefs = getContext().getSharedPreferences(com.fadcam.Constants.PREFS_NAME, android.content.Context.MODE_PRIVATE);
             prefs.edit()
                 .putBoolean(Constants.PREF_TORCH_STATE, isTorchOn)
                 .apply();
@@ -9882,7 +9875,7 @@ public class HomeFragment extends BaseFragment {
             return;
         }
 
-        android.content.SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
+        android.content.SharedPreferences prefs = requireContext().getSharedPreferences(com.fadcam.Constants.PREFS_NAME, android.content.Context.MODE_PRIVATE);
         String currentSource = prefs.getString(Constants.PREF_SELECTED_TORCH_SOURCE, null);
         boolean bothEnabled = prefs.getBoolean(Constants.PREF_BOTH_TORCHES_ENABLED, false);
 
@@ -10000,6 +9993,7 @@ public class HomeFragment extends BaseFragment {
         return null;
     }
 
+    @SuppressWarnings("deprecation") // getRunningServices only returns own-app services on API 26+, which is exactly what we check
     private boolean isRecordingInProgress() {
         ActivityManager manager =
             (ActivityManager) requireContext().getSystemService(
@@ -10523,9 +10517,7 @@ public class HomeFragment extends BaseFragment {
         // ACTION_DOWN (handleQuickActionGesture) — attaching a second
         // OnTouchListener here would REPLACE the reorder gesture listener and
         // kill long-press rearrange mode entirely (S20 FE report).
-        vibrator = (Vibrator) requireActivity().getSystemService(
-            Context.VIBRATOR_SERVICE
-        );
+        vibrator = androidx.core.content.ContextCompat.getSystemService(requireActivity(), Vibrator.class);
 
         // Initialize pause button to be visibly disabled from the start
         if (buttonPauseResume != null) {
@@ -12044,6 +12036,7 @@ public class HomeFragment extends BaseFragment {
         }
     }
 
+    @SuppressWarnings("deprecation") // getRunningServices only returns own-app services on API 26+, which is exactly what we check
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         if (getContext() == null) {
             return false;

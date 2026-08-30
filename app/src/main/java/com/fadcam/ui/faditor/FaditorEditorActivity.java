@@ -402,11 +402,7 @@ public class FaditorEditorActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // ── True fullscreen: hide status bar and nav bar ────────────
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_FULLSCREEN |
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        com.fadcam.util.SystemBarUtil.hideSystemBars(getWindow().getDecorView());
 
         setContentView(R.layout.activity_faditor_editor);
 
@@ -479,10 +475,7 @@ public class FaditorEditorActivity extends AppCompatActivity {
         super.onResume();
         
         // Reapply immersive fullscreen (in case it was cleared by edge swipes)
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_FULLSCREEN |
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        com.fadcam.util.SystemBarUtil.hideSystemBars(getWindow().getDecorView());
         
         playheadHandler.post(playheadUpdater);
     }
@@ -518,10 +511,7 @@ public class FaditorEditorActivity extends AppCompatActivity {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
             // Reapply immersive fullscreen when window regains focus
-            getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_FULLSCREEN |
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+            com.fadcam.util.SystemBarUtil.hideSystemBars(getWindow().getDecorView());
         }
     }
 
@@ -2081,8 +2071,6 @@ public class FaditorEditorActivity extends AppCompatActivity {
             codec.configure(format, null, null, 0);
             codec.start();
 
-            ByteBuffer[] inputBuffers = codec.getInputBuffers();
-            ByteBuffer[] outputBuffers = codec.getOutputBuffers();
             MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
 
             // Collect all decoded PCM samples (short values)
@@ -2095,7 +2083,7 @@ public class FaditorEditorActivity extends AppCompatActivity {
                 if (!inputDone) {
                     int inIdx = codec.dequeueInputBuffer(10_000);
                     if (inIdx >= 0) {
-                        ByteBuffer buf = inputBuffers[inIdx];
+                        ByteBuffer buf = codec.getInputBuffer(inIdx);
                         int sampleSize = extractor.readSampleData(buf, 0);
                         if (sampleSize < 0) {
                             codec.queueInputBuffer(inIdx, 0, 0, 0,
@@ -2115,7 +2103,7 @@ public class FaditorEditorActivity extends AppCompatActivity {
                     if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                         outputDone = true;
                     }
-                    ByteBuffer outBuf = outputBuffers[outIdx];
+                    ByteBuffer outBuf = codec.getOutputBuffer(outIdx);
                     outBuf.position(info.offset);
                     outBuf.limit(info.offset + info.size);
                     ShortBuffer shorts = outBuf.asShortBuffer();
@@ -2123,8 +2111,6 @@ public class FaditorEditorActivity extends AppCompatActivity {
                         allSamples.add(shorts.get());
                     }
                     codec.releaseOutputBuffer(outIdx, false);
-                } else if (outIdx == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
-                    outputBuffers = codec.getOutputBuffers();
                 }
             }
 

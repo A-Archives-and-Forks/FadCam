@@ -122,6 +122,7 @@ public class WatchRemoteFragment extends Fragment {
             android.net.wifi.WifiManager wm = (android.net.wifi.WifiManager)
                     requireContext().getApplicationContext()
                             .getSystemService(Context.WIFI_SERVICE);
+            @SuppressWarnings("deprecation") // WifiManager.getConnectionInfo; no non-deprecated Java API for the IP
             int rawIp = wm.getConnectionInfo().getIpAddress();
             String ipStr = String.format(java.util.Locale.US, "%d.%d.%d.%d",
                     (rawIp & 0xff),

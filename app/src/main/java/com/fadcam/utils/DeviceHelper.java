@@ -88,8 +88,12 @@ public class DeviceHelper {
         try {
             android.net.ConnectivityManager cm = (android.net.ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
             if (cm != null) {
-                android.net.NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-                return activeNetwork != null && activeNetwork.isConnected();
+                android.net.Network network = cm.getActiveNetwork();
+                if (network == null) return false;
+                android.net.NetworkCapabilities caps = cm.getNetworkCapabilities(network);
+                return caps != null
+                        && caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                        && caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED);
             }
         } catch (Exception e) {
             FLog.e(TAG, "Error checking internet connectivity", e);

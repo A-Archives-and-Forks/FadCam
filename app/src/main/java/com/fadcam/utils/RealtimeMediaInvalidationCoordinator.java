@@ -126,7 +126,7 @@ public class RealtimeMediaInvalidationCoordinator {
         for (File dir : watchRoots) {
             if (dir == null || !dir.exists() || !dir.isDirectory()) continue;
             FileObserver observer = new FileObserver(
-                    dir.getAbsolutePath(),
+                    dir,
                     FileObserver.CREATE
                             | FileObserver.CLOSE_WRITE
                             | FileObserver.MOVED_TO

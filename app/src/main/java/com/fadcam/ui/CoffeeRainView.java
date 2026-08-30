@@ -32,7 +32,7 @@ public class CoffeeRainView extends View {
     private int viewWidth, viewHeight;
     private Bitmap coffeeBitmap;
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Handler handler = new Handler();
+    private final Handler handler = new Handler(android.os.Looper.getMainLooper());
     private static final int FRAME_DELAY = 18; // ms
     private static final float SPEED_MIN = 1.2f;
     private static final float SPEED_MAX = 2.5f;

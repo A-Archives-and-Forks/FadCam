@@ -69,7 +69,7 @@ public class TextEditorDialog extends Dialog {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);
             } else {
-                getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+                getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);
             }
             
             // Add flags for proper behavior
@@ -216,10 +216,10 @@ public class TextEditorDialog extends Dialog {
     private void updateStyleButton(TextView button, boolean active) {
         if (active) {
             button.setBackgroundResource(R.drawable.annotation_layer_selected);
-            button.setTextColor(getContext().getColor(R.color.colorPrimary));
+            button.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), R.color.colorPrimary));
         } else {
             button.setBackgroundResource(R.drawable.settings_home_row_bg);
-            button.setTextColor(getContext().getColor(android.R.color.white));
+            button.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), android.R.color.white));
         }
     }
     

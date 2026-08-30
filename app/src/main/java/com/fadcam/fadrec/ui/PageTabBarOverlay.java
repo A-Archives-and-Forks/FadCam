@@ -178,7 +178,7 @@ public class PageTabBarOverlay {
         // Add to window
         int layoutType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                : WindowManager.LayoutParams.TYPE_PHONE;
+                : WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         
     layoutParams = new WindowManager.LayoutParams(
         WindowManager.LayoutParams.WRAP_CONTENT,
@@ -432,7 +432,7 @@ public class PageTabBarOverlay {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             tabView.startDragAndDrop(dragData, shadowBuilder, tabView, 0);
         } else {
-            tabView.startDrag(dragData, shadowBuilder, tabView, 0);
+            tabView.startDragAndDrop(dragData, shadowBuilder, tabView, 0);
         }
     }
 

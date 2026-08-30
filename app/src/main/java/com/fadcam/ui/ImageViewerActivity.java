@@ -182,8 +182,8 @@ public class ImageViewerActivity extends AppCompatActivity {
         Window window = getWindow();
         if (window == null) return;
         WindowCompat.setDecorFitsSystemWindows(window, false);
-        window.setStatusBarColor(Color.TRANSPARENT);
-        window.setNavigationBarColor(Color.TRANSPARENT);
+        com.fadcam.util.SystemBarUtil.setStatusBarColor(window, Color.TRANSPARENT);
+        com.fadcam.util.SystemBarUtil.setNavigationBarColor(window, Color.TRANSPARENT);
         WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(window, window.getDecorView());
         if (controller != null) {
             controller.setAppearanceLightStatusBars(false);

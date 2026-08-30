@@ -412,6 +412,15 @@ public class VideoSettingsFragment extends Fragment {
 
     private Runnable pendingLocationGrantedAction;
 
+    private final androidx.activity.result.ActivityResultLauncher<String> locationPermissionLauncher =
+            registerForActivityResult(
+                    new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+                    granted -> {
+                        Runnable action = pendingLocationGrantedAction;
+                        pendingLocationGrantedAction = null;
+                        if (granted && action != null) action.run();
+                    });
+
     private void showLocationEmbedSheet() {
         final String rk = "picker_result_location_embed";
         getParentFragmentManager().setFragmentResultListener(rk, this, (k, b) -> {
@@ -443,24 +452,8 @@ public class VideoSettingsFragment extends Fragment {
                 android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             onGranted.run();
         } else {
-            requestPermissions(new String[] { android.Manifest.permission.ACCESS_FINE_LOCATION }, 9123);
             pendingLocationGrantedAction = onGranted;
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-            @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 9123) {
-            if (grantResults.length > 0 && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                if (pendingLocationGrantedAction != null) {
-                    pendingLocationGrantedAction.run();
-                    pendingLocationGrantedAction = null;
-                }
-            } else {
-                pendingLocationGrantedAction = null;
-            }
+            locationPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION);
         }
     }
     // -------------- Additional methods for location embedding end -----------
@@ -1265,7 +1258,7 @@ public class VideoSettingsFragment extends Fragment {
                 boolean has8K = CamcorderProfile.hasProfile(camIdInt, CamcorderProfile.QUALITY_8KUHD);
                 FLog.d(TAG, "8K Detection: CamcorderProfile.hasProfile(QUALITY_8KUHD) = " + has8K);
                 if (has8K) {
-                    CamcorderProfile profile8K = CamcorderProfile.get(camIdInt, CamcorderProfile.QUALITY_8KUHD);
+                    CamcorderProfile profile8K = getCamcorderProfile(camIdInt, CamcorderProfile.QUALITY_8KUHD);
                     if (profile8K != null) {
                         FLog.d(TAG, "8K Detection: 8K Profile dimensions = " + profile8K.videoFrameWidth + "x" + profile8K.videoFrameHeight);
                     } else {
@@ -1276,7 +1269,7 @@ public class VideoSettingsFragment extends Fragment {
             
             for (int q : qualities) {
                 if (CamcorderProfile.hasProfile(camIdInt, q)) {
-                    CamcorderProfile p = CamcorderProfile.get(camIdInt, q);
+                    CamcorderProfile p = getCamcorderProfile(camIdInt, q);
                     if (p != null && p.videoFrameWidth == size.getWidth() && p.videoFrameHeight == size.getHeight())
                         return p;
                 }
@@ -1286,7 +1279,7 @@ public class VideoSettingsFragment extends Fragment {
             // 8K: Only if we have actual 8K profile
             if (size.getWidth() == 7680 && size.getHeight() == 4320) {
                 if (CamcorderProfile.hasProfile(camIdInt, CamcorderProfile.QUALITY_8KUHD)) {
-                    CamcorderProfile p8k = CamcorderProfile.get(camIdInt, CamcorderProfile.QUALITY_8KUHD);
+                    CamcorderProfile p8k = getCamcorderProfile(camIdInt, CamcorderProfile.QUALITY_8KUHD);
                     if (p8k != null) {
                         FLog.d(TAG, "8K Fallback: Found 8K profile with dimensions " + p8k.videoFrameWidth + "x" + p8k.videoFrameHeight);
                         return p8k;
@@ -1297,7 +1290,7 @@ public class VideoSettingsFragment extends Fragment {
             // 4K: Only if we have actual 4K profile  
             if (size.getWidth() == 3840 && size.getHeight() == 2160) {
                 if (CamcorderProfile.hasProfile(camIdInt, CamcorderProfile.QUALITY_2160P)) {
-                    CamcorderProfile p4k = CamcorderProfile.get(camIdInt, CamcorderProfile.QUALITY_2160P);
+                    CamcorderProfile p4k = getCamcorderProfile(camIdInt, CamcorderProfile.QUALITY_2160P);
                     if (p4k != null) {
                         FLog.d(TAG, "4K Fallback: Found 4K profile with dimensions " + p4k.videoFrameWidth + "x" + p4k.videoFrameHeight);
                         return p4k;
@@ -1316,12 +1309,12 @@ public class VideoSettingsFragment extends Fragment {
         int cameraId = cameraType.isDual() ? CameraType.BACK.getCameraId() : cameraType.getCameraId();
         // Simplified: treat 8K like 4K - just check if profile exists, no API level checks
         if (CamcorderProfile.hasProfile(cameraId, CamcorderProfile.QUALITY_8KUHD))
-            profiles.add(CamcorderProfile.get(cameraId, CamcorderProfile.QUALITY_8KUHD));
+            profiles.add(getCamcorderProfile(cameraId, CamcorderProfile.QUALITY_8KUHD));
         if (CamcorderProfile.hasProfile(cameraId, CamcorderProfile.QUALITY_2160P))
-            profiles.add(CamcorderProfile.get(cameraId, CamcorderProfile.QUALITY_2160P));
+            profiles.add(getCamcorderProfile(cameraId, CamcorderProfile.QUALITY_2160P));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
                 && CamcorderProfile.hasProfile(cameraId, CamcorderProfile.QUALITY_2K))
-            profiles.add(CamcorderProfile.get(cameraId, CamcorderProfile.QUALITY_2K));
+            profiles.add(getCamcorderProfile(cameraId, CamcorderProfile.QUALITY_2K));
         int[] qualities = { CamcorderProfile.QUALITY_1080P, CamcorderProfile.QUALITY_720P,
                 CamcorderProfile.QUALITY_480P, CamcorderProfile.QUALITY_CIF, CamcorderProfile.QUALITY_QCIF,
                 CamcorderProfile.QUALITY_LOW };
@@ -1332,7 +1325,7 @@ public class VideoSettingsFragment extends Fragment {
         }
         for (int q : qualities) {
             if (!added.contains(q) && CamcorderProfile.hasProfile(cameraId, q)) {
-                CamcorderProfile p = CamcorderProfile.get(cameraId, q);
+                CamcorderProfile p = getCamcorderProfile(cameraId, q);
                 if (p != null) {
                     profiles.add(p);
                     added.add(q);
@@ -1341,7 +1334,7 @@ public class VideoSettingsFragment extends Fragment {
         }
         if (!added.contains(CamcorderProfile.QUALITY_HIGH)
                 && CamcorderProfile.hasProfile(cameraId, CamcorderProfile.QUALITY_HIGH))
-            profiles.add(CamcorderProfile.get(cameraId, CamcorderProfile.QUALITY_HIGH));
+            profiles.add(getCamcorderProfile(cameraId, CamcorderProfile.QUALITY_HIGH));
         profiles.removeIf(Objects::isNull);
         return profiles;
     }
@@ -1846,10 +1839,21 @@ public class VideoSettingsFragment extends Fragment {
             else if (res.getWidth() >= 1280 || res.getHeight() >= 720)
                 quality = CamcorderProfile.QUALITY_720P;
             if (CamcorderProfile.hasProfile(camId, quality))
-                return CamcorderProfile.get(camId, quality);
+                return getCamcorderProfile(camId, quality);
         } catch (Exception ignored) {
         }
         return null;
+    }
+
+    /**
+     * CamcorderProfile.get(int,int) is deprecated in API 31 (its replacement,
+     * getAll, returns EncoderProfiles with a different shape). The 2-arg form
+     * still works on all supported devices, so we route through this helper
+     * and keep the deprecation localized.
+     */
+    @SuppressWarnings("deprecation")
+    private CamcorderProfile getCamcorderProfile(int cameraId, int quality) {
+        return CamcorderProfile.get(cameraId, quality);
     }
 
     // Simple holder mirroring legacy CameraIdInfo
@@ -2103,7 +2107,7 @@ public class VideoSettingsFragment extends Fragment {
 
             for (int quality : qualities) {
                 if (CamcorderProfile.hasProfile(cameraId, quality)) {
-                    CamcorderProfile profile = CamcorderProfile.get(cameraId, quality);
+                    CamcorderProfile profile = getCamcorderProfile(cameraId, quality);
                     if (profile != null && profile.videoFrameRate > maxProfileFps) {
                         maxProfileFps = profile.videoFrameRate;
                         FLog.d(TAG, "FPS Query: Found higher framerate " + maxProfileFps +
@@ -2117,7 +2121,7 @@ public class VideoSettingsFragment extends Fragment {
                 try {
                     // Some devices have specific high-FPS profiles for 60fps/120fps
                     if (CamcorderProfile.hasProfile(cameraId, CamcorderProfile.QUALITY_HIGH_SPEED_HIGH)) {
-                        CamcorderProfile profile = CamcorderProfile.get(cameraId,
+                        CamcorderProfile profile = getCamcorderProfile(cameraId,
                                 CamcorderProfile.QUALITY_HIGH_SPEED_HIGH);
                         if (profile != null && profile.videoFrameRate > maxProfileFps) {
                             maxProfileFps = profile.videoFrameRate;
@@ -2127,7 +2131,7 @@ public class VideoSettingsFragment extends Fragment {
                     }
 
                     if (CamcorderProfile.hasProfile(cameraId, CamcorderProfile.QUALITY_HIGH_SPEED_1080P)) {
-                        CamcorderProfile profile = CamcorderProfile.get(cameraId,
+                        CamcorderProfile profile = getCamcorderProfile(cameraId,
                                 CamcorderProfile.QUALITY_HIGH_SPEED_1080P);
                         if (profile != null && profile.videoFrameRate > maxProfileFps) {
                             maxProfileFps = profile.videoFrameRate;
@@ -2137,7 +2141,7 @@ public class VideoSettingsFragment extends Fragment {
                     }
 
                     if (CamcorderProfile.hasProfile(cameraId, CamcorderProfile.QUALITY_HIGH_SPEED_720P)) {
-                        CamcorderProfile profile = CamcorderProfile.get(cameraId,
+                        CamcorderProfile profile = getCamcorderProfile(cameraId,
                                 CamcorderProfile.QUALITY_HIGH_SPEED_720P);
                         if (profile != null && profile.videoFrameRate > maxProfileFps) {
                             maxProfileFps = profile.videoFrameRate;

@@ -30,7 +30,7 @@ public class SplashActivity extends Activity {
                     : MainActivity.class;
             startActivity(new Intent(SplashActivity.this, destination));
             // Apply fade transition instead of default activity animation
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+            com.fadcam.Utils.overridePendingTransitionCompat(this, R.anim.fade_in, R.anim.fade_out);
             finish();
         }, SPLASH_DELAY_MS);
     }

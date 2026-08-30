@@ -108,7 +108,7 @@ public class PlaybackService extends Service {
         }
 
         if (ACTION_START.equals(action)) {
-            Uri uri = intent.getParcelableExtra(EXTRA_URI);
+            Uri uri = com.fadcam.Utils.getParcelableExtraCompat(intent, EXTRA_URI, Uri.class);
             float speed = intent.getFloatExtra(EXTRA_SPEED, 1.0f);
             boolean muted = intent.getBooleanExtra(EXTRA_MUTED, false);
             long pos = intent.getLongExtra(EXTRA_POSITION_MS, 0L);

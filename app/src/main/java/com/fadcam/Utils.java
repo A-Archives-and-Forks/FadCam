@@ -22,6 +22,61 @@ import java.io.File;
 public class Utils {
 
     /**
+     * Backward-compatible Intent parcelable read. {@link android.content.Intent#getParcelableExtra(String)}
+     * was deprecated in API 33 in favor of the typed overload; this uses the
+     * typed form when available and falls back otherwise (minSdk is 24).
+     */
+    @SuppressWarnings("deprecation") // legacy untyped getParcelableExtra fallback for < API 33
+    public static <T extends android.os.Parcelable> T getParcelableExtraCompat(
+            android.content.Intent intent, String name, Class<T> clazz) {
+        if (intent == null) return null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            return intent.getParcelableExtra(name, clazz);
+        }
+        return intent.getParcelableExtra(name);
+    }
+
+    /**
+     * Backward-compatible Serializable read (the untyped
+     * {@link android.content.Intent#getSerializableExtra(String)} was deprecated
+     * in API 33 in favor of the typed overload).
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends java.io.Serializable> T getSerializableExtraCompat(
+            android.content.Intent intent, String name, Class<T> clazz) {
+        if (intent == null) return null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            return clazz.cast(intent.getSerializableExtra(name, clazz));
+        }
+        return (T) intent.getSerializableExtra(name);
+    }
+
+    /**
+     * Backward-compatible activity transition override. The legacy
+     * {@link android.app.Activity#overridePendingTransition(int, int)} was
+     * deprecated in API 34 in favor of overrideActivityTransition; this keeps
+     * one call site for both (0/0 means "no animation" and is skipped on 34+).
+     */
+    @SuppressWarnings("deprecation")
+    public static void overridePendingTransitionCompat(android.app.Activity activity,
+            int enterAnim, int exitAnim) {
+        if (activity == null) return;
+        if (enterAnim == 0 && exitAnim == 0) {
+            // "No transition" — nothing to do on the modern API.
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                activity.overridePendingTransition(0, 0);
+            }
+            return;
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            activity.overrideActivityTransition(
+                    android.app.Activity.OVERRIDE_TRANSITION_OPEN, enterAnim, exitAnim);
+        } else {
+            activity.overridePendingTransition(enterAnim, exitAnim);
+        }
+    }
+
+    /**
      * Formats a timestamp into a relative "time ago" string.
      * @param timeMillis The timestamp in milliseconds since the epoch.
      * @return A relative time string (e.g., "Just now", "5m ago", "2h ago", "3d ago", "1w ago", "2mo ago", "1yr ago").
@@ -234,10 +289,10 @@ public class Utils {
      * dim + ripple reads as a proper material press with zero side effects.
      */
     /** Shared vibrate implementation; short pulses for start, longer for stop. */
+    @SuppressWarnings("deprecation") // pre-O vibrate(long) fallback
     private static void vibrateEvent(android.content.Context context, long durationMs) {
         try {
-            android.os.Vibrator vibrator = (android.os.Vibrator)
-                    context.getSystemService(android.content.Context.VIBRATOR_SERVICE);
+            android.os.Vibrator vibrator = androidx.core.content.ContextCompat.getSystemService(context, android.os.Vibrator.class);
             if (vibrator == null || !vibrator.hasVibrator()) {
                 return;
             }
@@ -352,6 +407,7 @@ public class Utils {
      * picker preview). Amplitudes follow the user's preset; gated by the master
      * toggle + torch preset (OFF suppresses the pattern).
      */
+    @SuppressWarnings("deprecation") // pre-O vibrate(pattern, repeat) fallback
     public static void vibrateTorchPulses(android.content.Context context,
             long pulse1Ms, long pulse2Ms, boolean turningOn, int strong, int soft) {
         try {
@@ -368,8 +424,7 @@ public class Utils {
             long p2 = Math.max(10L, Math.min(10_000L, pulse2Ms));
             int amp1 = turningOn ? strong : soft;
             int amp2 = turningOn ? soft : strong;
-            android.os.Vibrator vibrator = (android.os.Vibrator)
-                    context.getSystemService(android.content.Context.VIBRATOR_SERVICE);
+            android.os.Vibrator vibrator = androidx.core.content.ContextCompat.getSystemService(context, android.os.Vibrator.class);
             if (vibrator == null || !vibrator.hasVibrator()) {
                 return;
             }
@@ -390,13 +445,13 @@ public class Utils {
      * (30 ms) while time remains, escalating to a firmer 70 ms pulse for the
      * last three seconds. Gated by the master toggle + "Buttons & controls".
      */
+    @SuppressWarnings("deprecation") // pre-O vibrate(long) fallback
     public static void vibrateCountdownTick(android.content.Context context, int remainingSeconds) {
         try {
             if (!hapticsAllowedForUi(context)) {
                 return;
             }
-            android.os.Vibrator vibrator = (android.os.Vibrator)
-                    context.getSystemService(android.content.Context.VIBRATOR_SERVICE);
+            android.os.Vibrator vibrator = androidx.core.content.ContextCompat.getSystemService(context, android.os.Vibrator.class);
             if (vibrator == null || !vibrator.hasVibrator()) {
                 return;
             }
@@ -419,6 +474,7 @@ public class Utils {
      */
     private static long lastSliderTickAtMs = 0L;
 
+    @SuppressWarnings("deprecation") // pre-O vibrate(long) fallback
     public static void vibrateSliderTick(android.content.Context context) {
         try {
             if (!hapticsAllowedForUi(context)) {
@@ -429,8 +485,7 @@ public class Utils {
                 return;
             }
             lastSliderTickAtMs = now;
-            android.os.Vibrator vibrator = (android.os.Vibrator)
-                    context.getSystemService(android.content.Context.VIBRATOR_SERVICE);
+            android.os.Vibrator vibrator = androidx.core.content.ContextCompat.getSystemService(context, android.os.Vibrator.class);
             if (vibrator == null || !vibrator.hasVibrator()) {
                 return;
             }

@@ -117,7 +117,7 @@ public class TrashFragment extends BaseFragment implements TrashAdapter.OnTrashI
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         executorService = Executors.newSingleThreadExecutor();
-        setHasOptionsMenu(true);
+        // Options menu is registered via addMenuProvider in onViewCreated.
         sharedPreferencesManager = SharedPreferencesManager.getInstance(requireContext());
 
         // We no longer need our own back handler since MainActivity now detects
@@ -135,6 +135,23 @@ public class TrashFragment extends BaseFragment implements TrashAdapter.OnTrashI
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // Modern options-menu handling (the Fragment menu methods are deprecated).
+        requireActivity().addMenuProvider(new androidx.core.view.MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menuInflater.inflate(R.menu.trash_options_menu, menu);
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                if (menuItem.getItemId() == R.id.action_trash_auto_delete_settings) {
+                    showAutoDeleteBottomSheet();
+                    return true;
+                }
+                return false;
+            }
+        }, getViewLifecycleOwner());
 
         // Hide content initially until AppLock status is checked
         view.findViewById(R.id.constraint_layout_root).setVisibility(View.INVISIBLE);
@@ -876,21 +893,6 @@ public class TrashFragment extends BaseFragment implements TrashAdapter.OnTrashI
         }
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.trash_options_menu, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_trash_auto_delete_settings) {
-            showAutoDeleteBottomSheet();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     /**
      * Shows the unified bottom sheet picker for Trash auto-delete policy, replacing the legacy dialog.
      */
@@ -1126,7 +1128,7 @@ public class TrashFragment extends BaseFragment implements TrashAdapter.OnTrashI
                                             buttonDrawable.setAccessible(true);
                                             Drawable drawable = (Drawable) buttonDrawable.get(radioButton);
                                             if (drawable != null) {
-                                                drawable.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+                                                drawable.setTint(Color.WHITE);
                                             }
                                         } catch (Exception e) {
                                             FLog.e(TAG, "Failed to tint radio button via reflection: " + e.getMessage());

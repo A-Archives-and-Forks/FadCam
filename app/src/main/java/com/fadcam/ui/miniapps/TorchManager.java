@@ -209,13 +209,9 @@ public class TorchManager {
      * - Default shared prefs: used by RemoteStreamManager (the "API")
      */
     private void saveTorchStateToPrefs(boolean enabled) {
-        // Save to app_prefs (used by HomeFragment via SharedPreferencesManager)
+        // Save to app_prefs (used by HomeFragment via SharedPreferencesManager
+        // and by RemoteStreamManager.isTorchOn()).
         context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean(Constants.PREF_TORCH_STATE, enabled)
-            .apply();
-        // Also save to default prefs (used by RemoteStreamManager API)
-        PreferenceManager.getDefaultSharedPreferences(context)
             .edit()
             .putBoolean(Constants.PREF_TORCH_STATE, enabled)
             .apply();

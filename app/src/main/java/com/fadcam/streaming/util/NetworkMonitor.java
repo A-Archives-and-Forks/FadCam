@@ -145,6 +145,7 @@ public class NetworkMonitor {
      * Get WiFi or Mobile signal level (0-4).
      * Returns -1 if unknown or permission missing.
      */
+    @SuppressWarnings("deprecation") // WifiManager.getConnectionInfo/calculateSignalLevel; no modern equivalent for RSSI bars
     public int getSignalLevel() {
         if (appContext == null) {
             FLog.w(TAG, "getSignalLevel: appContext is null");
@@ -187,18 +188,24 @@ public class NetworkMonitor {
                     }
                 }
             } else {
-                // Fallback for older devices
-                NetworkInfo ni = cm.getActiveNetworkInfo();
+                // Fallback for older devices (pre-API-23) — unreachable at minSdk 24.
+                @SuppressWarnings("deprecation")
+                android.net.NetworkInfo ni = cm.getActiveNetworkInfo();
                 if (ni != null && ni.isConnected()) {
-                    if (ni.getType() == ConnectivityManager.TYPE_WIFI) {
+                    @SuppressWarnings("deprecation")
+                    int type = ni.getType();
+                    if (type == ConnectivityManager.TYPE_WIFI) {
                         WifiManager wm = (WifiManager) appContext.getSystemService(Context.WIFI_SERVICE);
                         if (wm != null) {
+                            @SuppressWarnings("deprecation")
                             WifiInfo info = wm.getConnectionInfo();
                             if (info != null && info.getRssi() != -127) {
-                                return WifiManager.calculateSignalLevel(info.getRssi(), 5);
+                                @SuppressWarnings("deprecation")
+                                int level = WifiManager.calculateSignalLevel(info.getRssi(), 5);
+                                return level;
                             }
                         }
-                    } else if (ni.getType() == ConnectivityManager.TYPE_MOBILE) {
+                    } else if (type == ConnectivityManager.TYPE_MOBILE) {
                         return 2;
                     }
                 }
@@ -255,9 +262,13 @@ public class NetworkMonitor {
         ConnectivityManager cm = (ConnectivityManager) 
             appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm == null) return false;
-        
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnected();
+
+        android.net.Network network = cm.getActiveNetwork();
+        if (network == null) return false;
+        android.net.NetworkCapabilities caps = cm.getNetworkCapabilities(network);
+        return caps != null
+                && caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                && caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED);
     }
     
     /**

@@ -153,7 +153,11 @@ public class RemoteStreamService extends Service {
         RemoteStreamManager.getInstance().setStreamingEnabled(false);
         
         // Cancel notification when service stops
-        stopForeground(true);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            stopForeground(android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST);
+        } else {
+            stopForeground(true);
+        }
         
         super.onDestroy();
     }

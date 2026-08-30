@@ -274,7 +274,7 @@ public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 int autoDeleteMinutes = sharedPreferencesManager.getTrashAutoDeleteMinutes();
                 if (autoDeleteMinutes == SharedPreferencesManager.TRASH_AUTO_DELETE_NEVER) {
                     tvRemainingTime.setText(context.getString(R.string.trash_auto_delete_info_manual));
-                    tvRemainingTime.setTextColor(context.getResources().getColor(R.color.gray_text_very_light));
+                    tvRemainingTime.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.gray_text_very_light));
                 } else {
                     long timeSinceTrashedMillis = System.currentTimeMillis() - item.getDateTrashed();
                     long autoDeleteTotalMillis = TimeUnit.MINUTES.toMillis(autoDeleteMinutes);
@@ -282,7 +282,7 @@ public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
                     if (remainingMillis <= 0) {
                         tvRemainingTime.setText(context.getString(R.string.trash_item_remaining_soon));
-                        tvRemainingTime.setTextColor(context.getResources().getColor(R.color.colorError));
+                        tvRemainingTime.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.colorError));
                     } else {
                         long remainingDays = TimeUnit.MILLISECONDS.toDays(remainingMillis);
                         if (remainingDays > 0) {
@@ -297,13 +297,13 @@ public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                         }
                         
                         if (remainingDays == 0 && TimeUnit.MILLISECONDS.toHours(remainingMillis) < 1) {
-                            tvRemainingTime.setTextColor(context.getResources().getColor(R.color.colorError));
+                            tvRemainingTime.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.colorError));
                         } else if (remainingDays == 0 && TimeUnit.MILLISECONDS.toHours(remainingMillis) < 12) {
-                            tvRemainingTime.setTextColor(context.getResources().getColor(R.color.colorWarning));
+                            tvRemainingTime.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.colorWarning));
                         } else if (remainingDays < 3) {
-                            tvRemainingTime.setTextColor(context.getResources().getColor(R.color.colorWarning));
+                            tvRemainingTime.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.colorWarning));
                         } else {
-                            tvRemainingTime.setTextColor(context.getResources().getColor(R.color.gray_text_light));
+                            tvRemainingTime.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.gray_text_light));
                         }
                     }
                 }

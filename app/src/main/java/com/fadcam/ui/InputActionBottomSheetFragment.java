@@ -237,7 +237,7 @@ public class InputActionBottomSheetFragment extends BottomSheetDialogFragment {
             input.setHint(hint);
         input.setBackgroundResource(R.drawable.prefs_input_bg);
         input.setPadding(dp(12), dp(10), dp(12), dp(10));
-        input.setTextColor(getResources().getColor(android.R.color.white));
+        input.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.white));
         input.setHintTextColor(0xFF777777);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -274,7 +274,7 @@ public class InputActionBottomSheetFragment extends BottomSheetDialogFragment {
             // Malformed JSON: show a clear error instead of a blank/crash.
             TextView err = new TextView(requireContext());
             err.setText(getString(R.string.prefs_import_failed) + "\n" + e.getMessage());
-            err.setTextColor(getResources().getColor(android.R.color.holo_red_light));
+            err.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_light));
             err.setTextSize(13f);
             err.setPadding(dp(16), dp(12), dp(16), dp(12));
             parent.addView(err);
@@ -427,7 +427,7 @@ public class InputActionBottomSheetFragment extends BottomSheetDialogFragment {
     private void buildReset(LinearLayout parent, String phrase) {
         TextView info = new TextView(requireContext());
         info.setText(getString(R.string.prefs_reset_type_delete));
-        info.setTextColor(getResources().getColor(android.R.color.darker_gray));
+        info.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray));
         info.setTextSize(13f);
         info.setPadding(dp(16), dp(4), dp(16), dp(4));
         parent.addView(info);
@@ -439,7 +439,7 @@ public class InputActionBottomSheetFragment extends BottomSheetDialogFragment {
         // uppercase phrase (case sensitive requirement).
         input.setBackgroundResource(R.drawable.prefs_input_bg);
         input.setPadding(dp(12), dp(10), dp(12), dp(10));
-        input.setTextColor(getResources().getColor(android.R.color.white));
+        input.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.white));
         input.setHintTextColor(0xFF777777);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -502,7 +502,7 @@ public class InputActionBottomSheetFragment extends BottomSheetDialogFragment {
         icon.setLayoutParams(iconLp);
         icon.setImageResource(iconRes);
         icon.setImageTintList(
-                android.content.res.ColorStateList.valueOf(getResources().getColor(android.R.color.darker_gray)));
+                android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray)));
         row.addView(icon);
         LinearLayout text = new LinearLayout(requireContext());
         text.setOrientation(LinearLayout.VERTICAL);
@@ -510,11 +510,11 @@ public class InputActionBottomSheetFragment extends BottomSheetDialogFragment {
         TextView primary = new TextView(requireContext());
         primary.setText(title);
         primary.setTypeface(primary.getTypeface(), android.graphics.Typeface.BOLD);
-        primary.setTextColor(getResources().getColor(R.color.colorHeading));
+        primary.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.colorHeading));
         primary.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 15);
         TextView secondary = new TextView(requireContext());
         secondary.setText(subtitle);
-        secondary.setTextColor(getResources().getColor(android.R.color.darker_gray));
+        secondary.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray));
         secondary.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12);
         text.addView(primary);
         text.addView(secondary);
@@ -523,7 +523,7 @@ public class InputActionBottomSheetFragment extends BottomSheetDialogFragment {
         arrow.setLayoutParams(new LinearLayout.LayoutParams(dp(14), dp(14)));
         arrow.setImageResource(R.drawable.ic_arrow_right);
         arrow.setImageTintList(
-                android.content.res.ColorStateList.valueOf(getResources().getColor(android.R.color.darker_gray)));
+                android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray)));
         row.addView(arrow);
 
         if (destructive) {

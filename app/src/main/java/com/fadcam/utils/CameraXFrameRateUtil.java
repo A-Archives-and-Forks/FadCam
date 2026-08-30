@@ -110,7 +110,7 @@ public class CameraXFrameRateUtil {
                 
                 for (int quality : qualities) {
                     if (CamcorderProfile.hasProfile(cameraIdInt, quality)) {
-                        CamcorderProfile profile = CamcorderProfile.get(cameraIdInt, quality);
+                        CamcorderProfile profile = getCamcorderProfile(cameraIdInt, quality);
                         if (profile != null && profile.videoFrameRate > maxProfileFps) {
                             maxProfileFps = profile.videoFrameRate;
                             FLog.d(TAG, "Found higher framerate " + maxProfileFps + 
@@ -121,7 +121,7 @@ public class CameraXFrameRateUtil {
                 
                 // Check for high speed profiles
                 if (CamcorderProfile.hasProfile(cameraIdInt, CamcorderProfile.QUALITY_HIGH_SPEED_HIGH)) {
-                    CamcorderProfile profile = CamcorderProfile.get(cameraIdInt, CamcorderProfile.QUALITY_HIGH_SPEED_HIGH);
+                    CamcorderProfile profile = getCamcorderProfile(cameraIdInt, CamcorderProfile.QUALITY_HIGH_SPEED_HIGH);
                     if (profile != null && profile.videoFrameRate > maxProfileFps) {
                         maxProfileFps = profile.videoFrameRate;
                         FLog.d(TAG, "Found high-speed framerate " + maxProfileFps + " in QUALITY_HIGH_SPEED_HIGH");
@@ -129,7 +129,7 @@ public class CameraXFrameRateUtil {
                 }
                 
                 if (CamcorderProfile.hasProfile(cameraIdInt, CamcorderProfile.QUALITY_HIGH_SPEED_1080P)) {
-                    CamcorderProfile profile = CamcorderProfile.get(cameraIdInt, CamcorderProfile.QUALITY_HIGH_SPEED_1080P);
+                    CamcorderProfile profile = getCamcorderProfile(cameraIdInt, CamcorderProfile.QUALITY_HIGH_SPEED_1080P);
                     if (profile != null && profile.videoFrameRate > maxProfileFps) {
                         maxProfileFps = profile.videoFrameRate;
                         FLog.d(TAG, "Found high-speed framerate " + maxProfileFps + " in QUALITY_HIGH_SPEED_1080P");
@@ -137,7 +137,7 @@ public class CameraXFrameRateUtil {
                 }
                 
                 if (CamcorderProfile.hasProfile(cameraIdInt, CamcorderProfile.QUALITY_HIGH_SPEED_720P)) {
-                    CamcorderProfile profile = CamcorderProfile.get(cameraIdInt, CamcorderProfile.QUALITY_HIGH_SPEED_720P);
+                    CamcorderProfile profile = getCamcorderProfile(cameraIdInt, CamcorderProfile.QUALITY_HIGH_SPEED_720P);
                     if (profile != null && profile.videoFrameRate > maxProfileFps) {
                         maxProfileFps = profile.videoFrameRate;
                         FLog.d(TAG, "Found high-speed framerate " + maxProfileFps + " in QUALITY_HIGH_SPEED_720P");
@@ -281,4 +281,10 @@ public class CameraXFrameRateUtil {
             return defaultRateList;
         }
     }
-} 
+
+    /** CamcorderProfile.get(int,int) is deprecated (API 31); keeps one code path. */
+    @SuppressWarnings("deprecation")
+    private static android.media.CamcorderProfile getCamcorderProfile(int cameraId, int quality) {
+        return android.media.CamcorderProfile.get(cameraId, quality);
+    }
+}

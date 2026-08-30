@@ -365,7 +365,7 @@ public class ScreenRecordingService extends Service {
         FLog.d(TAG, "Got resultCode: " + resultCode + " (RESULT_OK), creating MediaProjection");
 
         try {
-            Intent permissionIntent = intent.getParcelableExtra("permissionData");
+            Intent permissionIntent = com.fadcam.Utils.getParcelableExtraCompat(intent, "permissionData", Intent.class);
             if (permissionIntent == null) {
                 FLog.d(TAG, "permissionData not found, using intent extras directly");
                 permissionIntent = intent;
@@ -409,7 +409,7 @@ public class ScreenRecordingService extends Service {
         if (intent == null || !intent.hasExtra("SURFACE")) {
             return;
         }
-        currentPreviewSurface = intent.getParcelableExtra("SURFACE");
+        currentPreviewSurface = com.fadcam.Utils.getParcelableExtraCompat(intent, "SURFACE", android.view.Surface.class);
         currentPreviewSurfaceWidth = intent.getIntExtra("SURFACE_WIDTH", -1);
         currentPreviewSurfaceHeight = intent.getIntExtra("SURFACE_HEIGHT", -1);
     }

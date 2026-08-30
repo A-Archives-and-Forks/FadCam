@@ -232,8 +232,8 @@ public class FullscreenPreviewActivity extends AppCompatActivity {
                 isPreviewOnlyActive = false;
             } else if (Constants.BROADCAST_ON_RECORDING_STATE_CALLBACK.equals(action)) {
                 try {
-                    RecordingState state = (RecordingState) intent.getSerializableExtra(
-                            Constants.INTENT_EXTRA_RECORDING_STATE);
+                    RecordingState state = com.fadcam.Utils.getSerializableExtraCompat(
+                            intent, Constants.INTENT_EXTRA_RECORDING_STATE, RecordingState.class);
                     boolean newPreviewActive = intent.getBooleanExtra(Constants.EXTRA_PREVIEW_ONLY_ACTIVE, false);
                     boolean wasAlreadyActive = isPreviewOnlyActive;
                     isPreviewOnlyActive = newPreviewActive;
@@ -1797,13 +1797,7 @@ public class FullscreenPreviewActivity extends AppCompatActivity {
                         WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
             }
         } else {
-            getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            com.fadcam.util.SystemBarUtil.hideSystemBars(getWindow().getDecorView());
         }
     }
 

@@ -1628,7 +1628,7 @@ public class RecordsFragment extends BaseFragment implements
         super.onCreate(savedInstanceState);
 
         // Now perform other fragment setup
-        setHasOptionsMenu(true); // Enable options menu for this fragment
+        // Options menu is registered via addMenuProvider in onViewCreated.
 
         // Initialize SharedPreferencesManager (can be done here or later if needed)
         // If it's definitely needed before onCreateView, initialize here.
@@ -1704,6 +1704,25 @@ public class RecordsFragment extends BaseFragment implements
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         FLog.d(TAG, "onViewCreated: View hierarchy created. Finding views and setting up.");
+
+        // Modern options-menu handling (the Fragment menu methods are deprecated).
+        requireActivity().addMenuProvider(new androidx.core.view.MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menu.clear(); // Always clear previous items first
+                menuInflater.inflate(R.menu.records_menu, menu); // Only inflate the correct menu for Records
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                int itemId = menuItem.getItemId();
+                if (itemId == R.id.action_more_options) {
+                    showRecordsSidebar();
+                    return true;
+                }
+                return false;
+            }
+        }, getViewLifecycleOwner());
 
         sharedPreferencesManager = SharedPreferencesManager.getInstance(requireContext());
         deletionSessionStore = new RecordsDeletionSessionStore(requireContext());
@@ -4750,25 +4769,6 @@ public class RecordsFragment extends BaseFragment implements
 
     // --- Options Menu & Sorting ---
 
-    // --- Menu Handling ---
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        menu.clear(); // Always clear previous items first
-        inflater.inflate(R.menu.records_menu, menu); // Only inflate the correct menu for Records
-        // Hide or show items as needed for Records tab
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int itemId = item.getItemId();
-        if (itemId == R.id.action_more_options) {
-            showRecordsSidebar();
-            return true;
-        }
-        // R.id.action_delete_all is handled in the bottom sheet now
-        return super.onOptionsItemSelected(item);
-    }
-
     private void showRecordsSidebar() {
         if (getActivity() == null)
             return;
@@ -4909,13 +4909,13 @@ public class RecordsFragment extends BaseFragment implements
             return;
         if (!com.fadcam.Utils.hapticsAllowedForUi(context))
             return;
-        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        Vibrator vibrator = androidx.core.content.ContextCompat.getSystemService(context, Vibrator.class);
         if (vibrator != null && vibrator.hasVibrator()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE));
             } else {
                 // noinspection deprecation
-                vibrator.vibrate(50);
+                vibrator.vibrate(android.os.VibrationEffect.createOneShot(50, android.os.VibrationEffect.DEFAULT_AMPLITUDE));
             }
         }
     }

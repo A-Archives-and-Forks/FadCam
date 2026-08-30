@@ -122,7 +122,7 @@ public class ReadmeBottomSheetFragment extends BottomSheetDialogFragment {
         iconLp.setMarginEnd(dp(16));
         icon.setLayoutParams(iconLp);
         icon.setImageResource(iconRes);
-        icon.setImageTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(android.R.color.darker_gray)));
+        icon.setImageTintList(android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray)));
         row.addView(icon);
         LinearLayout textContainer = new LinearLayout(requireContext());
         textContainer.setOrientation(LinearLayout.VERTICAL);
@@ -138,7 +138,7 @@ public class ReadmeBottomSheetFragment extends BottomSheetDialogFragment {
         primary.setTypeface(primary.getTypeface(), android.graphics.Typeface.BOLD);
         TextView secondary = new TextView(requireContext());
         secondary.setText(helper);
-        secondary.setTextColor(getResources().getColor(android.R.color.darker_gray));
+        secondary.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray));
         secondary.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12);
         textContainer.addView(primary);
         textContainer.addView(secondary);
@@ -146,7 +146,7 @@ public class ReadmeBottomSheetFragment extends BottomSheetDialogFragment {
         ImageView arrow = new ImageView(requireContext());
         arrow.setLayoutParams(new LinearLayout.LayoutParams(dp(14), dp(14)));
         arrow.setImageResource(R.drawable.ic_arrow_right);
-        arrow.setImageTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(android.R.color.darker_gray)));
+        arrow.setImageTintList(android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray)));
         row.addView(arrow);
         return row;
     }

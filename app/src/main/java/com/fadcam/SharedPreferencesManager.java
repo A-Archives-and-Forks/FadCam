@@ -483,8 +483,7 @@ public class SharedPreferencesManager {
         );
     }
 
-    // --- Existing FPS method (Maybe deprecate later) ---
-    @Deprecated
+    // --- Existing FPS method (convenience alias for back-camera FPS) ---
     public Integer getVideoFrameRate() {
         // Keep original default logic maybe? Or point to Back Camera?
         // For safety, maybe return Back camera's value if new ones exist
@@ -2750,6 +2749,7 @@ public class SharedPreferencesManager {
      * phones (20:9, 20.8:9, 21:9) that would cause letterboxing/pillarboxing
      * in the recorded video.
      */
+    @SuppressWarnings("deprecation") // legacy getDefaultDisplay/getRealMetrics fallback for < API 30
     public android.util.Size getScreenRecordingResolution() {
         String saved = sharedPreferences.getString(Constants.PREF_SCREEN_RECORDING_RESOLUTION, null);
         if (saved != null) {
@@ -2766,16 +2766,25 @@ public class SharedPreferencesManager {
             android.view.WindowManager wm = (android.view.WindowManager)
                     context.getSystemService(android.content.Context.WINDOW_SERVICE);
             if (wm != null) {
-                android.view.Display display = wm.getDefaultDisplay();
-                if (display != null) {
-                    android.util.DisplayMetrics metrics = new android.util.DisplayMetrics();
-                    display.getRealMetrics(metrics);
-                    if (metrics.widthPixels > 0 && metrics.heightPixels > 0) {
-                        // Store in landscape order (longest × shortest) for consistency
-                        int longest = Math.max(metrics.widthPixels, metrics.heightPixels);
-                        int shortest = Math.min(metrics.widthPixels, metrics.heightPixels);
-                        return new android.util.Size(longest, shortest);
+                int width = 0, height = 0;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                    android.graphics.Rect bounds = wm.getCurrentWindowMetrics().getBounds();
+                    width = bounds.width();
+                    height = bounds.height();
+                } else {
+                    android.view.Display display = wm.getDefaultDisplay();
+                    if (display != null) {
+                        android.util.DisplayMetrics metrics = new android.util.DisplayMetrics();
+                        display.getRealMetrics(metrics);
+                        width = metrics.widthPixels;
+                        height = metrics.heightPixels;
                     }
+                }
+                if (width > 0 && height > 0) {
+                    // Store in landscape order (longest × shortest) for consistency
+                    int longest = Math.max(width, height);
+                    int shortest = Math.min(width, height);
+                    return new android.util.Size(longest, shortest);
                 }
             }
         } catch (Exception e) {

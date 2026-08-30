@@ -1052,7 +1052,12 @@ public class RecordsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 .asBitmap()
                 .load(videoUri)
                 .apply(options)
-                .thumbnail(0.1f)
+                .thumbnail(
+                        Glide.with(context)
+                                .asBitmap()
+                                .load(videoUri)
+                                .apply(options)
+                                .override(96, 96))
                 .into(new com.bumptech.glide.request.target.CustomTarget<android.graphics.Bitmap>() {
                     @Override
                     public void onResourceReady(@NonNull android.graphics.Bitmap resource,
@@ -2107,6 +2112,7 @@ public class RecordsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
      * 
      * @param videoItem The video to upload to Google Drive
      */
+    @SuppressWarnings("deprecation") // ShareCompat.IntentBuilder.from(Activity) has no non-deprecated equivalent in this version
     private void openVideoInGoogleDrive(VideoItem videoItem) {
         if (context == null || videoItem == null || videoItem.uri == null)
             return;

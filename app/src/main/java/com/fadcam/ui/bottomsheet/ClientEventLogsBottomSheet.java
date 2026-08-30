@@ -76,7 +76,7 @@ public class ClientEventLogsBottomSheet extends BottomSheetDialogFragment {
             noEvents.setText(getString(R.string.events_no_events));
             noEvents.setTextSize(14);
             noEvents.setPadding(16, 16, 16, 16);
-            noEvents.setTextColor(requireContext().getColor(android.R.color.darker_gray));
+            noEvents.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray));
             eventsContainer.addView(noEvents);
             return;
         }
@@ -132,7 +132,7 @@ public class ClientEventLogsBottomSheet extends BottomSheetDialogFragment {
         TextView timestamp = new TextView(requireContext());
         timestamp.setText(timeStr);
         timestamp.setTextSize(11);
-        timestamp.setTextColor(requireContext().getColor(android.R.color.darker_gray));
+        timestamp.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray));
         LinearLayout.LayoutParams timestampParams = new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.WRAP_CONTENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
@@ -148,7 +148,7 @@ public class ClientEventLogsBottomSheet extends BottomSheetDialogFragment {
             TextView details = new TextView(requireContext());
             details.setText(event.getDetails());
             details.setTextSize(11);
-            details.setTextColor(requireContext().getColor(android.R.color.darker_gray));
+            details.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.darker_gray));
             LinearLayout.LayoutParams detailsParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT

@@ -296,7 +296,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
             getWindow().addFlags(
                 WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
             );
-            getWindow().setStatusBarColor(statusBarColor);
+            com.fadcam.util.SystemBarUtil.setStatusBarColor(getWindow(), statusBarColor);
         } catch (Exception e) {
             FLog.w(TAG, "Failed to set status bar color", e);
         }
@@ -2986,13 +2986,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
                 }
             } else {
                 final View decor = getWindow().getDecorView();
-                decor.setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
-                    View.SYSTEM_UI_FLAG_FULLSCREEN |
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                );
+                com.fadcam.util.SystemBarUtil.hideSystemBars(decor);
             }
         } catch (Exception ignored) {}
 

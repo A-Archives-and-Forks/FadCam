@@ -113,8 +113,6 @@ public class CenterCellBandDrawable extends Drawable {
         paint.setColorFilter(colorFilter);
     }
 
-    @Override
-    public int getOpacity() {
-        return PixelFormat.TRANSLUCENT;
-    }
+    @SuppressWarnings("deprecation") // Drawable.getOpacity() is deprecated
+    @Override public int getOpacity() { return android.graphics.PixelFormat.TRANSLUCENT; }
 }

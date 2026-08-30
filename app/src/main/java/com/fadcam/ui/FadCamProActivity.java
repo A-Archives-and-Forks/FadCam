@@ -177,7 +177,7 @@ public class FadCamProActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                com.fadcam.Utils.overridePendingTransitionCompat(FadCamProActivity.this, R.anim.fade_in, R.anim.fade_out);
                 setEnabled(false);
                 getOnBackPressedDispatcher().onBackPressed();
             }

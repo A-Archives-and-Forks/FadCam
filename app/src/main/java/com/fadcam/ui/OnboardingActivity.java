@@ -91,7 +91,7 @@ public class OnboardingActivity extends AppIntro {
 
         // Hide only the Done button while keeping navigation buttons
         setSkipButtonEnabled(false); // No skip button needed
-        setNextPageSwipeLock(false);
+        setSwipeLock(false); // (setNextPageSwipeLock is deprecated in AppIntro 6.x)
         setIndicatorEnabled(true);
 
         // Use wizard mode to replace Skip with Back button
@@ -206,7 +206,7 @@ public class OnboardingActivity extends AppIntro {
                         if (ivOnboardingAvatar != null && descView != null) {
                             // ===== SLEEP STATE =====
                             ivOnboardingAvatar.setImageResource(R.drawable.toggle_off);
-                            final Handler handler = new Handler();
+                            final Handler handler = new Handler(android.os.Looper.getMainLooper());
                             final boolean[] wakeDone = {false};
                             final boolean[] blinkLoopActive = {false};
                             final android.widget.TextView tvZ1 = v.findViewById(R.id.tvOnboardZ1);
@@ -681,20 +681,20 @@ public class OnboardingActivity extends AppIntro {
     /**
      * Applies the selected language immediately (same as MainActivity).
      */
+    @SuppressWarnings("deprecation") // AppIntro's internal pager adapter is a FragmentPagerAdapter
     private void applyLanguage(String languageCode) {
-        String currentLanguage = getResources().getConfiguration().locale.getLanguage();
+        String currentLanguage = getResources().getConfiguration().getLocales().get(0).getLanguage();
         if (!languageCode.equals(currentLanguage)) {
             // Save current position before applying language change
             ViewPager viewPager = findViewById(com.github.appintro.R.id.view_pager);
             final int currentPosition = viewPager != null ? viewPager.getCurrentItem() : 0;
 
-            // Apply locale change
-            java.util.Locale locale = new java.util.Locale(languageCode);
+            // Apply locale change (Locale.forLanguageTag replaces deprecated Locale(String))
+            java.util.Locale locale = java.util.Locale.forLanguageTag(languageCode);
             java.util.Locale.setDefault(locale);
             android.content.res.Configuration config = new android.content.res.Configuration();
             config.setLocale(locale);
             getApplicationContext().createConfigurationContext(config);
-            getResources().updateConfiguration(config, getResources().getDisplayMetrics());
 
             // IMPORTANT: SKIP RECREATE() WHICH IS CAUSING THE SLIDE ORDERING ISSUES
             // Instead manually update UI elements that need language change
@@ -717,7 +717,7 @@ public class OnboardingActivity extends AppIntro {
             }
 
             // Add a small delay to ensure all resources are reloaded with the new locale
-            new Handler().postDelayed(() -> {
+            new Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
                 // Force refresh the current slide first
                 forceRefreshCurrentSlide();
 
@@ -768,6 +768,7 @@ public class OnboardingActivity extends AppIntro {
     /**
      * Force refresh the current visible slide with a more aggressive approach
      */
+    @SuppressWarnings("deprecation") // AppIntro's internal pager adapter is a FragmentPagerAdapter
     private void forceRefreshCurrentSlide() {
         ViewPager viewPager = findViewById(com.github.appintro.R.id.view_pager);
         if (viewPager == null || viewPager.getAdapter() == null)
@@ -853,6 +854,7 @@ public class OnboardingActivity extends AppIntro {
     /**
      * Updates views after language change without recreating the activity
      */
+    @SuppressWarnings("deprecation") // AppIntro's internal pager adapter is a FragmentPagerAdapter
     private void updateViewsAfterLanguageChange() {
         // Update any text views or labels that need translation
         // For most views, this isn't necessary since they'll use the updated resources
@@ -912,6 +914,7 @@ public class OnboardingActivity extends AppIntro {
     /**
      * Refreshes fragments currently visible in the ViewPager
      */
+    @SuppressWarnings("deprecation") // AppIntro's internal pager adapter is a FragmentPagerAdapter
     private void refreshVisibleFragments(ViewPager viewPager) {
         if (viewPager == null || viewPager.getAdapter() == null)
             return;

@@ -155,15 +155,12 @@ public class StreamOrientationBottomSheet extends BottomSheetDialogFragment {
             }
         });
         if (dialog.getWindow() != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            dialog.getWindow().setNavigationBarColor(android.graphics.Color.BLACK);
+            com.fadcam.util.SystemBarUtil.setNavigationBarColor(dialog.getWindow(), android.graphics.Color.BLACK);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                 dialog.getWindow().setNavigationBarContrastEnforced(false);
             }
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                int flags = dialog.getWindow().getDecorView().getSystemUiVisibility();
-                dialog.getWindow().getDecorView().setSystemUiVisibility(
-                    flags & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-                );
+                com.fadcam.util.SystemBarUtil.setNavigationBarIconsLight(dialog.getWindow(), false);
             }
         }
         return dialog;

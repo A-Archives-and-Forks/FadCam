@@ -53,8 +53,8 @@ public class WhatsNewActivity extends AppCompatActivity {
         // Set edge-to-edge display and status bar color
         // Use AndroidX wrapper for Android 10+ compatibility
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        getWindow().setStatusBarColor(0xFF000000); // Full black
-        getWindow().setNavigationBarColor(0xFF000000); // Full black
+        com.fadcam.util.SystemBarUtil.setStatusBarColor(getWindow(), 0xFF000000); // Full black
+        com.fadcam.util.SystemBarUtil.setNavigationBarColor(getWindow(), 0xFF000000); // Full black
 
         // Initialize views
         changelogWebView = findViewById(R.id.changelogWebView);

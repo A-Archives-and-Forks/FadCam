@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean doubleBackToExitPressedOnce = false;
     private boolean skipNextBackHandling = false; // New flag to skip toast on next back press
-    private Handler backPressHandler = new Handler();
+    private Handler backPressHandler = new Handler(android.os.Looper.getMainLooper());
     private static final int BACK_PRESS_DELAY = 2000; // 2 seconds
 
     // Add SharedPreferencesManager field
@@ -157,11 +157,58 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Sets light (dark icons) vs dark (light icons) status bar appearance.
+     * Uses WindowInsetsController (API 30+) and falls back to the legacy
+     * SYSTEM_UI_FLAG on older devices.
+     */
+    @SuppressWarnings("deprecation") // legacy SYSTEM_UI_FLAG fallback for < API 30
+    private void setStatusBarIconsLight(boolean light) {
+        View decor = getWindow() != null ? getWindow().getDecorView() : null;
+        if (decor == null) return;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            android.view.WindowInsetsController c = getWindow().getInsetsController();
+            if (c != null) {
+                int flag = light ? android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS : 0;
+                c.setSystemBarsAppearance(flag, android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+            }
+        } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            int vis = decor.getSystemUiVisibility();
+            decor.setSystemUiVisibility(light
+                    ? vis | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                    : vis & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
+    }
+
+    /**
+     * Sets light (dark icons) vs dark (light icons) navigation bar appearance.
+     * Uses WindowInsetsController (API 30+) and falls back to the legacy
+     * SYSTEM_UI_FLAG on older devices.
+     */
+    @SuppressWarnings("deprecation") // legacy SYSTEM_UI_FLAG fallback for < API 30
+    private void setNavigationBarIconsLight(boolean light) {
+        View decor = getWindow() != null ? getWindow().getDecorView() : null;
+        if (decor == null) return;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            android.view.WindowInsetsController c = getWindow().getInsetsController();
+            if (c != null) {
+                int flag = light ? android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS : 0;
+                c.setSystemBarsAppearance(flag, android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS);
+            }
+        } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            int vis = decor.getSystemUiVisibility();
+            decor.setSystemUiVisibility(light
+                    ? vis | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                    : vis & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+        }
+    }
+
+    /**
      * Set the status bar (notification bar at top) color dynamically.
      * Used by fragments to change status bar color (e.g., Remote tab makes it black).
      *
      * @param color Color as integer (e.g., 0xFF000000 for black), or 0 to restore original from theme
      */
+    @SuppressWarnings("deprecation") // setStatusBarColor(int) is deprecated on API 35+; still needed for older edge-to-edge handling
     public void setStatusBarColor(int color) {
         if (getWindow() != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             // Keep status bar transparent so it always blends with dynamic headers/themes.
@@ -179,24 +226,13 @@ public class MainActivity extends AppCompatActivity {
                 // Restore theme-based icon tint (Snow Veil is light theme, others are dark)
                 String currentTheme = SharedPreferencesManager.getInstance(this).sharedPreferences
                         .getString(Constants.PREF_APP_THEME, Constants.DEFAULT_APP_THEME);
-                if ("Snow Veil".equals(currentTheme) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    // Light theme -> dark icons
-                    getWindow().getDecorView().setSystemUiVisibility(
-                        getWindow().getDecorView().getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    // Dark theme -> light icons
-                    getWindow().getDecorView().setSystemUiVisibility(
-                        getWindow().getDecorView().getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-                }
+                setStatusBarIconsLight("Snow Veil".equals(currentTheme));
             } else {
                 // Set custom color (e.g., black for Remote tab)
                 statusBarScrim.setBackgroundColor(color);
                 
                 // For dark backgrounds (like black), ensure icons are light (white)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    getWindow().getDecorView().setSystemUiVisibility(
-                        getWindow().getDecorView().getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-                }
+                setStatusBarIconsLight(false);
             }
         }
     }
@@ -209,8 +245,7 @@ public class MainActivity extends AppCompatActivity {
     public void setNavigationBarColor(int color) {
         if (getWindow() != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             // Keep navigation bar transparent in edge-to-edge mode.
-            getWindow().setNavigationBarColor(android.graphics.Color.TRANSPARENT);
-        }
+                    }
         
         // Update root layout background color to affect the navigation/gesture area background.
         // This area is visible because of the fragment_container and nav_container paddings.
@@ -224,24 +259,13 @@ public class MainActivity extends AppCompatActivity {
                 // Restore theme-based icon tint
                 String currentTheme = SharedPreferencesManager.getInstance(this).sharedPreferences
                         .getString(Constants.PREF_APP_THEME, Constants.DEFAULT_APP_THEME);
-                if ("Snow Veil".equals(currentTheme) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    // Light theme -> dark icons
-                    getWindow().getDecorView().setSystemUiVisibility(
-                        getWindow().getDecorView().getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
-                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    // Dark theme -> light icons
-                    getWindow().getDecorView().setSystemUiVisibility(
-                        getWindow().getDecorView().getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
-                }
+                setNavigationBarIconsLight("Snow Veil".equals(currentTheme));
             } else {
                 // Set custom color
                 root.setBackgroundColor(color);
                 
                 // For dark backgrounds (like black), ensure icons are light (white)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    getWindow().getDecorView().setSystemUiVisibility(
-                        getWindow().getDecorView().getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
-                }
+                setNavigationBarIconsLight(false);
             }
         }
     }
@@ -363,6 +387,14 @@ public class MainActivity extends AppCompatActivity {
         }
         super.onCreate(savedInstanceState);
         swipeTouchSlop = ViewConfiguration.get(this).getScaledTouchSlop();
+
+        // Modern back handling (onBackPressed override is deprecated in API 33).
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                handleBackPress();
+            }
+        });
         // Install splash screen (shows the themed windowSplashScreenAnimatedIcon)
         SplashScreen.installSplashScreen(this);
         // Apply user-selected theme AFTER splash so postSplashScreenTheme replaced by
@@ -444,7 +476,7 @@ public class MainActivity extends AppCompatActivity {
         applyLanguage(savedLanguageCode); // Apply the language preference
 
         // Check if current locale is Pashto
-        if (getResources().getConfiguration().locale.getLanguage().equals("ps")) {
+        if (getResources().getConfiguration().getLocales().get(0).getLanguage().equals("ps")) {
             getWindow().getDecorView().setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
         }
 
@@ -583,11 +615,7 @@ public class MainActivity extends AppCompatActivity {
             android.util.TypedValue typedValue = new android.util.TypedValue();
             int colorBottomNavAttr = getResources().getIdentifier("colorBottomNav", "attr", getPackageName());
             if (colorBottomNavAttr != 0 && getTheme().resolveAttribute(colorBottomNavAttr, typedValue, true)) {
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                    originalBottomNavColor = getColor(typedValue.resourceId);
-                } else {
-                    originalBottomNavColor = getResources().getColor(typedValue.resourceId);
-                }
+                originalBottomNavColor = getResources().getColor(typedValue.resourceId, getTheme());
                 FLog.d("MainActivity", "Saved bottom nav color from colorBottomNav: " + Integer.toHexString(originalBottomNavColor));
             }
         } catch (Exception e) {
@@ -998,19 +1026,17 @@ public class MainActivity extends AppCompatActivity {
 
     public void applyLanguage(String languageCode) {
         // Get current app language
-        String currentLanguage = getResources().getConfiguration().locale.getLanguage();
+        String currentLanguage = getResources().getConfiguration().getLocales().get(0).getLanguage();
 
         // Only apply language change if it's different from the current language
         if (!languageCode.equals(currentLanguage)) {
             FLog.d("MainActivity", "Applying language: " + languageCode);
-            Locale locale = new Locale(languageCode);
+            Locale locale = Locale.forLanguageTag(languageCode);
             Locale.setDefault(locale);
 
             android.content.res.Configuration config = new android.content.res.Configuration();
             config.setLocale(locale);
             getApplicationContext().createConfigurationContext(config);
-
-            getResources().updateConfiguration(config, getResources().getDisplayMetrics());
 
             // Recreate the activity to apply the changes
             recreate();
@@ -1135,8 +1161,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    public void onBackPressed() {
+    @SuppressWarnings("deprecation") // exits via the dispatcher; kept for clarity
+    private void handleBackPress() {
         // Unified: handle any visible overlay fragment (trash or settings)
         if (handleOverlayBack()) {
             return;
@@ -1149,7 +1175,7 @@ public class MainActivity extends AppCompatActivity {
             // Check if we should skip this back handling
             if (skipNextBackHandling) {
                 skipNextBackHandling = false;
-                super.onBackPressed();
+                getOnBackPressedDispatcher().onBackPressed();
                 return;
             }
 
@@ -1157,7 +1183,7 @@ public class MainActivity extends AppCompatActivity {
             if (doubleBackToExitPressedOnce) {
                 // Remove the callback to prevent it from executing after app close
                 backPressHandler.removeCallbacks(backPressRunnable);
-                super.onBackPressed();
+                getOnBackPressedDispatcher().onBackPressed();
                 return;
             }
 
@@ -1610,55 +1636,54 @@ public class MainActivity extends AppCompatActivity {
                         .apply();
             }
 
-            getWindow().setNavigationBarColor(getResources().getColor(R.color.amoled_background, getTheme()));
+                        setNavigationBarColor(getResources().getColor(R.color.amoled_background, getTheme()));
         } else if ("Crimson Bloom".equals(themeName)) {
             // Red theme
             setTheme(R.style.Theme_FadCam_Red);
-            getWindow().setNavigationBarColor(getResources().getColor(R.color.red_theme_background_dark, getTheme()));
+                        setNavigationBarColor(getResources().getColor(R.color.red_theme_background_dark, getTheme()));
         } else if ("Premium Gold".equals(themeName)) {
             // Gold theme
             setTheme(R.style.Theme_FadCam_Gold);
-            getWindow().setNavigationBarColor(getResources().getColor(R.color.gold_theme_background_dark, getTheme()));
+                        setNavigationBarColor(getResources().getColor(R.color.gold_theme_background_dark, getTheme()));
         } else if ("Silent Forest".equals(themeName)) {
             // Silent Forest theme
             setTheme(R.style.Theme_FadCam_SilentForest);
-            getWindow().setNavigationBarColor(
+                        setNavigationBarColor(
                     getResources().getColor(R.color.silentforest_theme_background_dark, getTheme()));
         } else if ("Shadow Alloy".equals(themeName)) {
             // Shadow Alloy theme
             setTheme(R.style.Theme_FadCam_ShadowAlloy);
-            getWindow().setNavigationBarColor(
+                        setNavigationBarColor(
                     getResources().getColor(R.color.shadowalloy_theme_background_dark, getTheme()));
         } else if ("Pookie Pink".equals(themeName)) {
             // Pookie Pink theme
             setTheme(R.style.Theme_FadCam_PookiePink);
-            getWindow().setNavigationBarColor(
+            setNavigationBarColor(
                     getResources().getColor(R.color.pookiepink_theme_background_dark, getTheme()));
         } else if ("Snow Veil".equals(themeName)) {
             // Snow Veil theme
             setTheme(R.style.Theme_FadCam_SnowVeil);
-            getWindow().setNavigationBarColor(
+            setNavigationBarColor(
                     getResources().getColor(R.color.snowveil_theme_background_light, getTheme()));
 
             // Set status bar icons to dark for light theme
-            getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+            setStatusBarIconsLight(true);
+            setNavigationBarIconsLight(true);
         } else if ("Midnight Dusk".equals(themeName)) {
             // Always use the custom always-dark theme for Midnight Dusk
             setTheme(R.style.Theme_FadCam_MidnightDusk);
-            getWindow().setNavigationBarColor(getResources().getColor(R.color.gray, getTheme()));
+            setNavigationBarColor(getResources().getColor(R.color.gray, getTheme()));
         } else {
             // If we get an unknown theme name, use the system default
             // This should be the Crimson Bloom theme as defined in
             // Constants.DEFAULT_APP_THEME
             if ("Crimson Bloom".equals(Constants.DEFAULT_APP_THEME)) {
                 setTheme(R.style.Theme_FadCam_Red);
-                getWindow()
-                        .setNavigationBarColor(getResources().getColor(R.color.red_theme_background_dark, getTheme()));
+                                setNavigationBarColor(getResources().getColor(R.color.red_theme_background_dark, getTheme()));
             } else {
                 // Fallback to base theme
                 setTheme(R.style.Base_Theme_FadCam);
-                getWindow().setNavigationBarColor(getResources().getColor(R.color.gray, getTheme()));
+                                setNavigationBarColor(getResources().getColor(R.color.gray, getTheme()));
             }
         }
     }
@@ -1813,16 +1838,20 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Enable edge-to-edge display following Android 15 guidelines
      */
+    @SuppressWarnings("deprecation") // legacy system-bar color/contrast calls are needed below API 35
     private void enableEdgeToEdge() {
-        // Enable edge-to-edge display
+        // Enable edge-to-edge display following Android 15 guidelines.
         androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
-        // Make system bars transparent
-        getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
-        getWindow().setNavigationBarColor(android.graphics.Color.TRANSPARENT);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-            getWindow().setStatusBarContrastEnforced(false);
-            getWindow().setNavigationBarContrastEnforced(false);
+        // On API 35+, setStatusBarColor/setNavigationBarColor and the contrast
+        // flags are deprecated (no-ops under edge-to-edge). Keep the legacy
+        // behavior for older devices where they still apply.
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                getWindow().setStatusBarContrastEnforced(false);
+                getWindow().setNavigationBarContrastEnforced(false);
+            }
         }
 
         // Handle window insets properly
@@ -1842,7 +1871,8 @@ public class MainActivity extends AppCompatActivity {
                     .getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars());
 
             // Check if running on TV form factor (TV or Wear OS smartwatch)
-            boolean isTV = getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEVISION);
+            boolean isTV = getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+                    || getPackageManager().hasSystemFeature("android.hardware.type.television");
             boolean isWear = getPackageManager().hasSystemFeature("android.hardware.type.watch");
             boolean isFormFactorTV = isTV || isWear;
 

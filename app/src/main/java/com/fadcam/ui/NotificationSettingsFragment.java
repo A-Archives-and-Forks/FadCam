@@ -100,30 +100,24 @@ public class NotificationSettingsFragment extends Fragment {
                 bottomSheet.setBackgroundResource(R.drawable.picker_bottom_sheet_gradient_bg_dynamic);
             }
             if (dialog.getWindow() != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                dialog.getWindow().setNavigationBarColor(android.graphics.Color.BLACK);
+                com.fadcam.util.SystemBarUtil.setNavigationBarColor(dialog.getWindow(), android.graphics.Color.BLACK);
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                     dialog.getWindow().setNavigationBarContrastEnforced(false);
                 }
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    int flags = dialog.getWindow().getDecorView().getSystemUiVisibility();
-                    dialog.getWindow().getDecorView().setSystemUiVisibility(
-                            flags & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-                    );
+                    com.fadcam.util.SystemBarUtil.setNavigationBarIconsLight(dialog.getWindow(), false);
                 }
             }
             if (requireActivity().getWindow() != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                 android.view.Window activityWindow = requireActivity().getWindow();
-                previousActivityNavBarColor[0] = activityWindow.getNavigationBarColor();
+                previousActivityNavBarColor[0] = com.fadcam.util.SystemBarUtil.getNavigationBarColor(activityWindow);
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                     previousActivityNavContrastEnforced[0] = activityWindow.isNavigationBarContrastEnforced();
                     activityWindow.setNavigationBarContrastEnforced(false);
                 }
-                activityWindow.setNavigationBarColor(android.graphics.Color.BLACK);
+                com.fadcam.util.SystemBarUtil.setNavigationBarColor(activityWindow, android.graphics.Color.BLACK);
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    int activityFlags = activityWindow.getDecorView().getSystemUiVisibility();
-                    activityWindow.getDecorView().setSystemUiVisibility(
-                            activityFlags & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-                    );
+                    com.fadcam.util.SystemBarUtil.setNavigationBarIconsLight(activityWindow, false);
                 }
             }
         });
@@ -151,7 +145,7 @@ public class NotificationSettingsFragment extends Fragment {
                     && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP
                     && previousActivityNavBarColor[0] != null) {
                 android.view.Window activityWindow = requireActivity().getWindow();
-                activityWindow.setNavigationBarColor(previousActivityNavBarColor[0]);
+                com.fadcam.util.SystemBarUtil.setNavigationBarColor(activityWindow, previousActivityNavBarColor[0]);
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
                         && previousActivityNavContrastEnforced[0] != null) {
                     activityWindow.setNavigationBarContrastEnforced(previousActivityNavContrastEnforced[0]);

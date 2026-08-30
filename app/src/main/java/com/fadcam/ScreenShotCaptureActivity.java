@@ -20,7 +20,7 @@ public class ScreenShotCaptureActivity extends ComponentActivity {
         FLog.d(TAG, "onCreate: screenshot shortcut invoked");
 
         try {
-            overridePendingTransition(0, 0);
+            com.fadcam.Utils.overridePendingTransitionCompat(this, 0, 0);
             if (getWindow() != null) {
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
@@ -67,7 +67,7 @@ public class ScreenShotCaptureActivity extends ComponentActivity {
     private void finishNow() {
         try {
             moveTaskToBack(true);
-            overridePendingTransition(0, 0);
+            com.fadcam.Utils.overridePendingTransitionCompat(this, 0, 0);
         } catch (Exception ignored) {
         }
         finish();

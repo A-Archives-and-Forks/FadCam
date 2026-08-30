@@ -190,7 +190,7 @@ public class LayerPanelOverlay {
         // Add to window
         int layoutType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                : WindowManager.LayoutParams.TYPE_PHONE;
+                : WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         
         // Use WRAP_CONTENT for dynamic sizing based on content
     layoutParams = new WindowManager.LayoutParams(
@@ -566,7 +566,7 @@ public class LayerPanelOverlay {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             layerView.startDragAndDrop(dragData, shadowBuilder, layerView, 0);
         } else {
-            layerView.startDrag(dragData, shadowBuilder, layerView, 0);
+            layerView.startDragAndDrop(dragData, shadowBuilder, layerView, 0);
         }
     }
 

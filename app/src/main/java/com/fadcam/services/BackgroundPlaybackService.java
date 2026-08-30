@@ -54,7 +54,7 @@ public class BackgroundPlaybackService extends Service {
         }
         
         if (ACTION_START.equals(action)) {
-            Uri uri = intent.getParcelableExtra(EXTRA_URI);
+            Uri uri = com.fadcam.Utils.getParcelableExtraCompat(intent, EXTRA_URI, Uri.class);
             initPlayer(uri);
             showNotification();
         }
