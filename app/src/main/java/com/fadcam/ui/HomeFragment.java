@@ -3440,14 +3440,12 @@ public class HomeFragment extends BaseFragment {
             IntentFilter zoomFilter = new IntentFilter(Constants.BROADCAST_ON_ZOOM_CHANGED);
             IntentFilter exposureFilter = new IntentFilter(Constants.BROADCAST_ON_EXPOSURE_CHANGED);
 
-            androidx.localbroadcastmanager.content.LocalBroadcastManager lbm =
-                    androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(context);
-            lbm.registerReceiver(broadcastOnCameraSwitchStarted, startFilter);
-            lbm.registerReceiver(broadcastOnCameraSwitchComplete, completeFilter);
-            lbm.registerReceiver(broadcastOnCameraSwitchFailed, failedFilter);
-            lbm.registerReceiver(broadcastOnMirrorChanged, mirrorFilter);
-            lbm.registerReceiver(broadcastOnZoomChanged, zoomFilter);
-            lbm.registerReceiver(broadcastOnExposureChanged, exposureFilter);
+            androidx.core.content.ContextCompat.registerReceiver(context, broadcastOnCameraSwitchStarted, startFilter, android.content.Context.RECEIVER_NOT_EXPORTED);
+            androidx.core.content.ContextCompat.registerReceiver(context, broadcastOnCameraSwitchComplete, completeFilter, android.content.Context.RECEIVER_NOT_EXPORTED);
+            androidx.core.content.ContextCompat.registerReceiver(context, broadcastOnCameraSwitchFailed, failedFilter, android.content.Context.RECEIVER_NOT_EXPORTED);
+            androidx.core.content.ContextCompat.registerReceiver(context, broadcastOnMirrorChanged, mirrorFilter, android.content.Context.RECEIVER_NOT_EXPORTED);
+            androidx.core.content.ContextCompat.registerReceiver(context, broadcastOnZoomChanged, zoomFilter, android.content.Context.RECEIVER_NOT_EXPORTED);
+            androidx.core.content.ContextCompat.registerReceiver(context, broadcastOnExposureChanged, exposureFilter, android.content.Context.RECEIVER_NOT_EXPORTED);
             FLog.d(TAG, "Camera switch + control receivers registered successfully");
         } catch (Exception e) {
             FLog.e(TAG, "Error registering camera switch receivers", e);
@@ -3460,22 +3458,22 @@ public class HomeFragment extends BaseFragment {
     private void unregisterCameraSwitchReceivers(Context context) {
         try {
             if (broadcastOnCameraSwitchStarted != null) {
-                androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(context).unregisterReceiver(broadcastOnCameraSwitchStarted);
+                context.unregisterReceiver(broadcastOnCameraSwitchStarted);
             }
             if (broadcastOnCameraSwitchComplete != null) {
-                androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(context).unregisterReceiver(broadcastOnCameraSwitchComplete);
+                context.unregisterReceiver(broadcastOnCameraSwitchComplete);
             }
             if (broadcastOnCameraSwitchFailed != null) {
-                androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(context).unregisterReceiver(broadcastOnCameraSwitchFailed);
+                context.unregisterReceiver(broadcastOnCameraSwitchFailed);
             }
             if (broadcastOnMirrorChanged != null) {
-                androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(context).unregisterReceiver(broadcastOnMirrorChanged);
+                context.unregisterReceiver(broadcastOnMirrorChanged);
             }
             if (broadcastOnZoomChanged != null) {
-                androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(context).unregisterReceiver(broadcastOnZoomChanged);
+                context.unregisterReceiver(broadcastOnZoomChanged);
             }
             if (broadcastOnExposureChanged != null) {
-                androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(context).unregisterReceiver(broadcastOnExposureChanged);
+                context.unregisterReceiver(broadcastOnExposureChanged);
             }
             FLog.d(TAG, "Camera switch + control receivers unregistered");
         } catch (Exception e) {

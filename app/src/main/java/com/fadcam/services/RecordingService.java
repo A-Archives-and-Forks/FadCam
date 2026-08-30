@@ -1870,9 +1870,7 @@ public class RecordingService extends Service {
             exposureBroadcast.putExtra(
                 Constants.EXTRA_BROADCAST_EXPOSURE_COMPENSATION,
                 sharedPreferencesManager.getSavedExposureCompensation());
-            androidx.localbroadcastmanager.content.LocalBroadcastManager
-                .getInstance(this)
-                .sendBroadcast(exposureBroadcast);
+            sendBroadcast(exposureBroadcast.setPackage(getPackageName()));
             com.fadcam.streaming.RemoteStreamManager.getInstance().invalidateStatusCache();
             }
             return START_STICKY;
@@ -1930,7 +1928,7 @@ public class RecordingService extends Service {
                     zoomBcast.putExtra(Constants.EXTRA_BROADCAST_ZOOM_RATIO, sharedPreferencesManager.getSpecificZoomRatio(cam));
                     zoomBcast.putExtra(Constants.EXTRA_BROADCAST_PAN_X, sharedPreferencesManager.getSpecificPanX(cam));
                     zoomBcast.putExtra(Constants.EXTRA_BROADCAST_PAN_Y, sharedPreferencesManager.getSpecificPanY(cam));
-                    androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).sendBroadcast(zoomBcast);
+                    this.sendBroadcast(zoomBcast.setPackage(this.getPackageName()));
                 } else {
                     applyZoomRatio(zoomRatio); // preserves saved pan internally
                     // Notify HomeFragment; read effective pan from SharedPreferences
@@ -1941,7 +1939,7 @@ public class RecordingService extends Service {
                     zoomBcast.putExtra(Constants.EXTRA_BROADCAST_ZOOM_RATIO, zoomRatio);
                     zoomBcast.putExtra(Constants.EXTRA_BROADCAST_PAN_X, broadcastPanX);
                     zoomBcast.putExtra(Constants.EXTRA_BROADCAST_PAN_Y, broadcastPanY);
-                    androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).sendBroadcast(zoomBcast);
+                    this.sendBroadcast(zoomBcast.setPackage(this.getPackageName()));
                 }
                 com.fadcam.streaming.RemoteStreamManager.getInstance().invalidateStatusCache();
             }
@@ -1955,7 +1953,7 @@ public class RecordingService extends Service {
             // Notify HomeFragment so mirror button visual state updates
             android.content.Intent mirrorBcast = new android.content.Intent(Constants.BROADCAST_ON_MIRROR_CHANGED);
             mirrorBcast.putExtra(Constants.EXTRA_MIRROR_ENABLED, enabled);
-            androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).sendBroadcast(mirrorBcast);
+            this.sendBroadcast(mirrorBcast.setPackage(this.getPackageName()));
             return START_STICKY;
         } else if (Constants.INTENT_ACTION_CAPTURE_PHOTO.equals(action)) {
             capturePhotoFromRecording();
@@ -2358,7 +2356,7 @@ public class RecordingService extends Service {
 
         // Stop foreground service and cancel notification early to improve
         // responsiveness
-        stopForeground(true);
+        com.fadcam.Utils.stopForegroundCompat(this, true);
         cancelNotification();
 
         // Use a background thread for resource cleanup to avoid blocking the main
@@ -2923,7 +2921,7 @@ public class RecordingService extends Service {
         Intent broadcastIntent = new Intent(Constants.BROADCAST_ON_CAMERA_SWITCH_STARTED);
         broadcastIntent.putExtra(Constants.BROADCAST_EXTRA_CAMERA_TYPE_FROM, fromType.toString());
         broadcastIntent.putExtra(Constants.BROADCAST_EXTRA_CAMERA_TYPE_TO, toType.toString());
-        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
+        this.sendBroadcast(broadcastIntent.setPackage(this.getPackageName()));
         FLog.d(TAG, "Broadcast: CAMERA_SWITCH_STARTED (" + fromType + " → " + toType + ")");
     }
 
@@ -2934,7 +2932,7 @@ public class RecordingService extends Service {
         Intent broadcastIntent = new Intent(Constants.BROADCAST_ON_CAMERA_SWITCH_COMPLETE);
         broadcastIntent.putExtra(Constants.BROADCAST_EXTRA_CAMERA_TYPE_FROM, fromType.toString());
         broadcastIntent.putExtra(Constants.BROADCAST_EXTRA_CAMERA_TYPE_TO, toType.toString());
-        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
+        this.sendBroadcast(broadcastIntent.setPackage(this.getPackageName()));
         FLog.d(TAG, "Broadcast: CAMERA_SWITCH_COMPLETE (" + fromType + " → " + toType + ")");
     }
 
@@ -2947,7 +2945,7 @@ public class RecordingService extends Service {
         if (attemptedType != null) {
             broadcastIntent.putExtra(Constants.BROADCAST_EXTRA_CAMERA_TYPE_ATTEMPTED, attemptedType.toString());
         }
-        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
+        this.sendBroadcast(broadcastIntent.setPackage(this.getPackageName()));
         FLog.d(TAG, "Broadcast: CAMERA_SWITCH_FAILED (reason: " + errorReason + ", attempted: " + attemptedType + ")");
     }
 
@@ -3922,7 +3920,7 @@ public class RecordingService extends Service {
         if (!shouldServiceStayAlive()) {
             FLog.i(TAG, "No active recording or background processing detected. Stopping service.");
             // Remove from foreground first to avoid ANR if stopSelf takes time
-            stopForeground(true);
+            com.fadcam.Utils.stopForegroundCompat(this, true);
             stopSelf(); // Stop the service as its work is done.
         } else {
             FLog.d(TAG, "Service continues running (Tasks active).");
@@ -5820,7 +5818,7 @@ public class RecordingService extends Service {
                     sendBroadcast(intent);
                     
                     // Update SharedPreferences so RemoteStreamManager can read current torch state
-                    android.content.SharedPreferences prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(this);
+                    android.content.SharedPreferences prefs = getSharedPreferences(com.fadcam.Constants.PREFS_NAME, android.content.Context.MODE_PRIVATE);
                     prefs.edit()
                         .putBoolean(Constants.PREF_TORCH_STATE, isRecordingTorchEnabled)
                         .apply();

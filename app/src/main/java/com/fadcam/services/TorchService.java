@@ -178,7 +178,7 @@ public class TorchService extends Service {
         // Initialize system services
         cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        sharedPreferences = android.preference.PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences = getSharedPreferences(com.fadcam.Constants.PREFS_NAME, android.content.Context.MODE_PRIVATE);
 
         // Create notification channel for Android Oreo and above
         createNotificationChannel();
@@ -369,7 +369,7 @@ public class TorchService extends Service {
         } else {
             // Torch is off — update notification to reflect "off" state, then stop foreground
             notificationManager.notify(NOTIFICATION_ID, buildTorchNotification(false));
-            stopForeground(true);
+            com.fadcam.Utils.stopForegroundCompat(this, true);
         }
     }
 

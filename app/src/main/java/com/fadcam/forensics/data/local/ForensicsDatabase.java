@@ -52,7 +52,7 @@ public abstract class ForensicsDatabase extends RoomDatabase {
                             ForensicsDatabase.class,
                             DB_NAME
                         )
-                        .fallbackToDestructiveMigration()
+                        .fallbackToDestructiveMigration(true)
                         .build();
                 }
             }

@@ -109,7 +109,7 @@ public class BackgroundPlaybackService extends Service {
     @Override
     public void onDestroy() {
         if (isForeground) {
-            stopForeground(true);
+            com.fadcam.Utils.stopForegroundCompat(this, true);
         }
         super.onDestroy();
     }

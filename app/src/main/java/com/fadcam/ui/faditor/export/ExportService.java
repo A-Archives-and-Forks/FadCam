@@ -186,8 +186,7 @@ public class ExportService extends Service {
                 Intent broadcast = new Intent(ACTION_EXPORT_STARTED);
                 broadcast.putExtra(EXTRA_OUTPUT_PATH, outputPath);
                 FLog.d(TAG, "Broadcasting ACTION_EXPORT_STARTED");
-                androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(ExportService.this)
-                        .sendBroadcast(broadcast);
+                sendBroadcast(broadcast.setPackage(getPackageName()));
                 FLog.d(TAG, "ACTION_EXPORT_STARTED broadcast sent");
             }
 
@@ -202,8 +201,7 @@ public class ExportService extends Service {
                 Intent broadcast = new Intent(ACTION_EXPORT_PROGRESS);
                 broadcast.putExtra(EXTRA_PROGRESS, progress);
                 FLog.d(TAG, "Broadcasting ACTION_EXPORT_PROGRESS: " + percent + "%");
-                androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(ExportService.this)
-                        .sendBroadcast(broadcast);
+                sendBroadcast(broadcast.setPackage(getPackageName()));
             }
 
             @Override
@@ -219,8 +217,7 @@ public class ExportService extends Service {
                 Intent broadcast = new Intent(ACTION_EXPORT_COMPLETED);
                 broadcast.putExtra(EXTRA_OUTPUT_PATH, outputPath);
                 FLog.d(TAG, "Broadcasting ACTION_EXPORT_COMPLETED");
-                androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(ExportService.this)
-                        .sendBroadcast(broadcast);
+                sendBroadcast(broadcast.setPackage(getPackageName()));
                 FLog.d(TAG, "ACTION_EXPORT_COMPLETED broadcast sent");
                 
                 stopForeground(STOP_FOREGROUND_DETACH);
@@ -239,8 +236,7 @@ public class ExportService extends Service {
                 Intent broadcast = new Intent(ACTION_EXPORT_ERROR);
                 broadcast.putExtra(EXTRA_ERROR_MESSAGE, error.getMessage());
                 FLog.d(TAG, "Broadcasting ACTION_EXPORT_ERROR: " + error.getMessage());
-                androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(ExportService.this)
-                        .sendBroadcast(broadcast);
+                sendBroadcast(broadcast.setPackage(getPackageName()));
                 FLog.d(TAG, "ACTION_EXPORT_ERROR broadcast sent");
                 
                 stopForeground(STOP_FOREGROUND_DETACH);
@@ -263,8 +259,7 @@ public class ExportService extends Service {
             // Broadcast cancellation to UI
             Intent broadcast = new Intent(ACTION_EXPORT_CANCELLED);
             FLog.d(TAG, "Broadcasting ACTION_EXPORT_CANCELLED");
-            androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this)
-                    .sendBroadcast(broadcast);
+            sendBroadcast(broadcast.setPackage(getPackageName()));
             FLog.d(TAG, "ACTION_EXPORT_CANCELLED broadcast sent");
         }
         stopForeground(STOP_FOREGROUND_REMOVE);

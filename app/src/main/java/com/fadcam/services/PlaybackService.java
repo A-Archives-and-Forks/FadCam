@@ -65,7 +65,7 @@ public class PlaybackService extends Service {
             }
         } catch (Exception ignored) {}
         stopProgressUpdates();
-        stopForeground(true);
+        com.fadcam.Utils.stopForegroundCompat(this, true);
         stopSelf();
     };
     // Millis timestamp when the auto-stop alarm is scheduled (0 when none)
@@ -87,7 +87,7 @@ public class PlaybackService extends Service {
                 } catch (Exception ignored) {}
             }
             stopProgressUpdates();
-            stopForeground(true);
+            com.fadcam.Utils.stopForegroundCompat(this, true);
             stopSelf();
             return START_NOT_STICKY;
         }
@@ -457,7 +457,7 @@ public class PlaybackService extends Service {
                 player.pause(); // Ensure playback is stopped
             } catch (Exception ignored) {}
         }
-        try { stopForeground(true); } catch (Exception ignored) {}
+        try { com.fadcam.Utils.stopForegroundCompat(this, true); } catch (Exception ignored) {}
         super.onDestroy();
     }
 

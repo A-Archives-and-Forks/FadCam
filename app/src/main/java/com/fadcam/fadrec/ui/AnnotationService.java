@@ -49,7 +49,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.io.File;
 import java.util.List;
@@ -3237,7 +3236,7 @@ public class AnnotationService extends Service {
 
         IntentFilter filter = new IntentFilter(com.fadcam.Constants.BROADCAST_ON_SCREEN_RECORDING_STATE_CALLBACK);
         // Use LocalBroadcastManager for guaranteed delivery on Android 12+
-        LocalBroadcastManager.getInstance(this).registerReceiver(recordingStateReceiver, filter);
+        androidx.core.content.ContextCompat.registerReceiver(this, recordingStateReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED);
         FLog.d(TAG, "[BROADCAST] Recording state receiver registered via LocalBroadcastManager");
     }
 
@@ -3452,7 +3451,7 @@ public class AnnotationService extends Service {
         };
         
         IntentFilter filter = new IntentFilter(BaseTransparentEditorActivity.ACTION_EDITOR_RESULT);
-        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).registerReceiver(textEditorResultReceiver, filter);
+        androidx.core.content.ContextCompat.registerReceiver(this, textEditorResultReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED);
         FLog.d(TAG, "Text editor result receiver registered");
         
         // Register editor lifecycle receivers (start/finish)
@@ -3496,7 +3495,7 @@ public class AnnotationService extends Service {
         IntentFilter lifecycleFilter = new IntentFilter();
         lifecycleFilter.addAction(BaseTransparentEditorActivity.ACTION_EDITOR_STARTED);
         lifecycleFilter.addAction(BaseTransparentEditorActivity.ACTION_EDITOR_FINISHED);
-        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).registerReceiver(editorLifecycleReceiver, lifecycleFilter);
+        androidx.core.content.ContextCompat.registerReceiver(this, editorLifecycleReceiver, lifecycleFilter, android.content.Context.RECEIVER_NOT_EXPORTED);
         FLog.d(TAG, "Editor lifecycle receiver registered");
     }
     
@@ -4393,7 +4392,7 @@ public class AnnotationService extends Service {
             unregisterReceiver(menuActionReceiver);
         }
         if (recordingStateReceiver != null) {
-            LocalBroadcastManager.getInstance(this).unregisterReceiver(recordingStateReceiver);
+            this.unregisterReceiver(recordingStateReceiver);
         }
         if (colorPickerReceiver != null) {
             unregisterReceiver(colorPickerReceiver);
@@ -4411,10 +4410,10 @@ public class AnnotationService extends Service {
             unregisterReceiver(pageRenameReceiver);
         }
         if (textEditorResultReceiver != null) {
-            androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).unregisterReceiver(textEditorResultReceiver);
+            this.unregisterReceiver(textEditorResultReceiver);
         }
         if (editorLifecycleReceiver != null) {
-            androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).unregisterReceiver(editorLifecycleReceiver);
+            this.unregisterReceiver(editorLifecycleReceiver);
         }
 
         // Stop auto-save timer

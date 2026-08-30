@@ -77,6 +77,26 @@ public class Utils {
     }
 
     /**
+     * Backward-compatible Service#stopForeground. The boolean overload was
+     * deprecated in API 29 in favor of the int flags overload; this keeps one
+     * call site for all API levels.
+     */
+    @SuppressWarnings("deprecation")
+    public static void stopForegroundCompat(android.app.Service service, boolean removeNotification) {
+        if (service == null) return;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            int flags = removeNotification
+                    ? android.app.Service.STOP_FOREGROUND_REMOVE
+                    : android.app.Service.STOP_FOREGROUND_DETACH;
+            service.stopForeground(flags);
+        } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            service.stopForeground(android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST);
+        } else {
+            service.stopForeground(removeNotification);
+        }
+    }
+
+    /**
      * Formats a timestamp into a relative "time ago" string.
      * @param timeMillis The timestamp in milliseconds since the epoch.
      * @return A relative time string (e.g., "Just now", "5m ago", "2h ago", "3d ago", "1w ago", "2mo ago", "1yr ago").

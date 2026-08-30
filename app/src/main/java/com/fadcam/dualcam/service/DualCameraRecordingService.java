@@ -34,7 +34,6 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.documentfile.provider.DocumentFile;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.fadcam.Constants;
 import com.fadcam.MaximumRecordingDuration;
@@ -665,7 +664,7 @@ public class DualCameraRecordingService extends Service {
         }
         Intent mirrorBcast = new Intent(Constants.BROADCAST_ON_MIRROR_CHANGED);
         mirrorBcast.putExtra(Constants.EXTRA_MIRROR_ENABLED, enabled);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(mirrorBcast);
+        this.sendBroadcast(mirrorBcast.setPackage(this.getPackageName()));
         FLog.i(TAG, "Front video mirror set: " + enabled);
     }
 

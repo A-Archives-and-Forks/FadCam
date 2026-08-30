@@ -56,6 +56,7 @@ public final class PlayerHolder {
         return instance;
     }
 
+    @SuppressWarnings("deprecation") // legacy audio focus / speakerphone APIs
     public synchronized ExoPlayer getOrCreate(Context context) {
         if (player == null) {
             FLog.d(TAG, "Creating new ExoPlayer instance with explicit audio config");

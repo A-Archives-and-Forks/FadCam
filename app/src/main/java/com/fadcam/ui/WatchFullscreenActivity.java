@@ -19,7 +19,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 
 import com.fadcam.Constants;
 import com.fadcam.R;
@@ -137,7 +137,7 @@ public class WatchFullscreenActivity extends AppCompatActivity {
         filter.addAction(Constants.BROADCAST_ON_RECORDING_RESUMED);
         filter.addAction(Constants.BROADCAST_ON_RECORDING_PAUSED);
         filter.addAction(Constants.BROADCAST_ON_RECORDING_STOPPED);
-        LocalBroadcastManager.getInstance(this).registerReceiver(stateReceiver, filter);
+        androidx.core.content.ContextCompat.registerReceiver(this, stateReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED);
 
         // Start timer loop
         handler.post(timerRunnable);
@@ -152,7 +152,7 @@ public class WatchFullscreenActivity extends AppCompatActivity {
             try { previewSurface.release(); } catch (Exception ignored) { }
             previewSurface = null;
         }
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(stateReceiver);
+        this.unregisterReceiver(stateReceiver);
         handler.removeCallbacks(timerRunnable);
     }
 

@@ -62,7 +62,7 @@ public abstract class VideoIndexDatabase extends RoomDatabase {
                             DB_NAME
                         )
                         .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
-                        .fallbackToDestructiveMigration()
+                        .fallbackToDestructiveMigration(true)
                         .build();
                 }
             }

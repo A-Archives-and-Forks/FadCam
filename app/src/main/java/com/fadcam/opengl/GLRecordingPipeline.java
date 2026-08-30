@@ -2548,6 +2548,7 @@ public class GLRecordingPipeline {
      * 3. THEN finalize muxer
      * 4. THEN release all resources
      */
+    @SuppressWarnings("deprecation") // legacy BT SCO / speakerphone APIs for older devices
     public void stopRecording() {
         // stop log removed
         try {
@@ -3450,6 +3451,7 @@ public class GLRecordingPipeline {
      * Sets up the audio encoder and AudioRecord for AAC audio capture.
      * Call before starting audio thread.
      */
+    @SuppressWarnings("deprecation") // legacy BT SCO / speakerphone APIs for older devices
     private void setupAudio() {
         if (!audioRecordingEnabled) {
             return;

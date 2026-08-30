@@ -145,9 +145,14 @@ public class AboutFragment extends BaseFragment {
             String packageName = requireContext().getPackageName();
             PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
             String versionName = packageInfo.versionName;
-            long versionCode = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P
-                    ? packageInfo.getLongVersionCode()
-                    : (@SuppressWarnings("deprecation") int) packageInfo.versionCode;
+            long versionCode;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                versionCode = packageInfo.getLongVersionCode();
+            } else {
+                @SuppressWarnings("deprecation")
+                int legacyCode = packageInfo.versionCode;
+                versionCode = legacyCode;
+            }
             
             // Format: "Version Name (versionCode)\npackage.name"
             String versionText = getString(R.string.version_format, versionName) + " (" + versionCode + ")\n" + packageName;

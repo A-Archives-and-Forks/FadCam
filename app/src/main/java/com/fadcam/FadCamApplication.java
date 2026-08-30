@@ -3,13 +3,12 @@ package com.fadcam;
 import android.app.Application;
 import android.app.ActivityManager;
 import androidx.lifecycle.ProcessLifecycleOwner;
-import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.OnLifecycleEvent;
-import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 import android.content.Intent;
 import android.content.ComponentName;
 
-public class FadCamApplication extends Application implements LifecycleObserver {
+public class FadCamApplication extends Application implements DefaultLifecycleObserver {
     @Override
     public void onCreate() {
         super.onCreate();
@@ -51,8 +50,8 @@ public class FadCamApplication extends Application implements LifecycleObserver 
         }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    public void onAppBackgrounded() {
+    @Override
+    public void onStop(@androidx.annotation.NonNull LifecycleOwner owner) {
         // App is in background, reset AppLock session
         SharedPreferencesManager.getInstance(this).setAppLockSessionUnlocked(false);
         Intent intent = new Intent(this, com.fadcam.services.RecordingService.class);
@@ -60,8 +59,8 @@ public class FadCamApplication extends Application implements LifecycleObserver 
         startService(intent);
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    public void onAppForegrounded() {
+    @Override
+    public void onStart(@androidx.annotation.NonNull LifecycleOwner owner) {
         // Don't send it for TextEditorActivity, TransparentPermissionActivity, etc.
         // which are transparent/standalone and shouldn't wake up the main app
         

@@ -28,7 +28,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.ContextCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.fadcam.Constants;
 import com.fadcam.R;
@@ -1366,7 +1365,7 @@ public class FadRecHomeFragment extends HomeFragment {
             
             // Use LocalBroadcastManager for guaranteed delivery on Android 12+
             // This bypasses the background app broadcast restrictions
-            LocalBroadcastManager.getInstance(requireContext()).registerReceiver(screenRecordingStateReceiver, filter);
+            androidx.core.content.ContextCompat.registerReceiver(requireContext(), screenRecordingStateReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED);
             
             isScreenRecordingReceiverRegistered = true;
         } catch (IllegalArgumentException e) {

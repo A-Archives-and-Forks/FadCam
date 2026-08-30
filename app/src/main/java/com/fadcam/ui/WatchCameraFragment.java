@@ -19,7 +19,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.fadcam.Constants;
 import com.fadcam.R;
@@ -208,8 +207,7 @@ public class WatchCameraFragment extends Fragment {
         filter.addAction(Constants.BROADCAST_ON_RECORDING_STOPPED);
         filter.addAction(Constants.BROADCAST_ON_RECORDING_PAUSED);
         filter.addAction(Constants.BROADCAST_ON_RECORDING_RESUMED);
-        LocalBroadcastManager.getInstance(requireContext())
-                .registerReceiver(recordingReceiver, filter);
+        androidx.core.content.ContextCompat.registerReceiver(requireContext(), recordingReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED);
 
         // Sync recording state in case we resumed while service is active
         queryRecordingState();
@@ -221,8 +219,7 @@ public class WatchCameraFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        LocalBroadcastManager.getInstance(requireContext())
-                .unregisterReceiver(recordingReceiver);
+        requireContext().unregisterReceiver(recordingReceiver);
         handler.removeCallbacksAndMessages(null);
     }
 

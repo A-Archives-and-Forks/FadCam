@@ -9,7 +9,6 @@ import androidx.activity.ComponentActivity;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.fadcam.Constants;
 import com.fadcam.fadrec.MediaProjectionHelper;
@@ -70,7 +69,7 @@ public class TransparentPermissionActivity extends ComponentActivity {
                     // Also store the data intent itself as a parcelable
                     broadcastIntent.putExtra("mediaProjectionData", data);
                     
-                    LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
+                    this.sendBroadcast(broadcastIntent.setPackage(this.getPackageName()));
                     
                     FLog.d(TAG, "[BROADCAST-SEND] Permission granted broadcast sent via LocalBroadcastManager with data extras");
                 } else {
@@ -78,7 +77,7 @@ public class TransparentPermissionActivity extends ComponentActivity {
                     FLog.w(TAG, "Screen capture permission DENIED or data null - resultCode: " + result.getResultCode());
                     
                     Intent broadcastIntent = new Intent(Constants.ACTION_SCREEN_RECORDING_PERMISSION_DENIED);
-                    LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
+                    this.sendBroadcast(broadcastIntent.setPackage(this.getPackageName()));
                 }
                 
                 // Close this transparent activity

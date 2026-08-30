@@ -199,7 +199,7 @@ public class AlarmService extends Service {
                 FLog.i(TAG, "✅ RemoteStreamManager alarm state updated to false");
             }
             
-            stopForeground(true); // Remove notification
+            com.fadcam.Utils.stopForegroundCompat(this, true); // Remove notification
             
         } catch (Exception e) {
             FLog.e(TAG, "Error stopping alarm playback", e);

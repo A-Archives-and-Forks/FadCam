@@ -162,7 +162,6 @@ public class RecordsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     // Debounced persist task (posts to executor)
     private final Runnable persistDurationTask;
     // Broadcast receiver to listen for playback position updates
-    private final androidx.localbroadcastmanager.content.LocalBroadcastManager localBroadcastManager;
     private final android.content.BroadcastReceiver playbackPositionReceiver;
     private android.content.Context receiverRegisteredContext = null;
 
@@ -235,7 +234,6 @@ public class RecordsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         };
 
         // Setup LocalBroadcastReceiver for immediate progress updates
-        this.localBroadcastManager = androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(context);
         this.playbackPositionReceiver = new android.content.BroadcastReceiver() {
             @Override
             public void onReceive(android.content.Context ctx, android.content.Intent intent) {
@@ -268,8 +266,9 @@ public class RecordsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         };
         try {
             receiverRegisteredContext = context.getApplicationContext();
-            this.localBroadcastManager.registerReceiver(this.playbackPositionReceiver,
-                    new android.content.IntentFilter("com.fadcam.ACTION_PLAYBACK_POSITION_UPDATED"));
+            androidx.core.content.ContextCompat.registerReceiver(context, this.playbackPositionReceiver,
+                    new android.content.IntentFilter("com.fadcam.ACTION_PLAYBACK_POSITION_UPDATED"),
+                    android.content.Context.RECEIVER_NOT_EXPORTED);
         } catch (Exception ignored) {
         }
         FLog.i(TAG, "init safe_media_probe=" + safeMediaProbeMode
@@ -1236,11 +1235,9 @@ public class RecordsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         super.onDetachedFromRecyclerView(recyclerView);
         try {
             if (receiverRegisteredContext != null) {
-                androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(receiverRegisteredContext)
-                        .unregisterReceiver(playbackPositionReceiver);
+                receiverRegisteredContext.unregisterReceiver(playbackPositionReceiver);
             } else {
-                androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(recyclerView.getContext())
-                        .unregisterReceiver(playbackPositionReceiver);
+                recyclerView.getContext().unregisterReceiver(playbackPositionReceiver);
             }
         } catch (Exception ignored) {
         }

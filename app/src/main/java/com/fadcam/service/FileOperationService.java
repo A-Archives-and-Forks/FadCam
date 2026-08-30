@@ -183,7 +183,7 @@ public class FileOperationService extends Service implements FileOperationManage
         FLog.d(TAG, "All tasks completed");
         
         // Stop foreground service when no more tasks
-        stopForeground(false);
+        com.fadcam.Utils.stopForegroundCompat(this, false);
         
         // Stop the service itself if no more work
         if (operationManager.getQueueSize() == 0) {

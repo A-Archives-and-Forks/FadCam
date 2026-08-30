@@ -125,8 +125,7 @@ public class FaditorMiniFragment extends BaseFragment {
                 filter.addAction(com.fadcam.ui.faditor.export.ExportService.ACTION_EXPORT_COMPLETED);
                 filter.addAction(com.fadcam.ui.faditor.export.ExportService.ACTION_EXPORT_ERROR);
                 filter.addAction(com.fadcam.ui.faditor.export.ExportService.ACTION_EXPORT_CANCELLED);
-                androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(requireContext())
-                    .registerReceiver(exportProgressReceiver, filter);
+                androidx.core.content.ContextCompat.registerReceiver(requireContext(), exportProgressReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED);
                 isExportReceiverRegistered = true;
                 FLog.d("FaditorMiniFragment", "✅ Export receiver registered in onCreate");
             } catch (Exception e) {
@@ -352,8 +351,7 @@ public class FaditorMiniFragment extends BaseFragment {
         // Ensure broadcast receiver is unregistered
         if (exportProgressReceiver != null && isExportReceiverRegistered) {
             try {
-                androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(requireContext())
-                    .unregisterReceiver(exportProgressReceiver);
+                requireContext().unregisterReceiver(exportProgressReceiver);
             } catch (Exception e) {
                 FLog.w("FaditorMiniFragment", "Error unregistering export receiver: " + e.getMessage());
             }

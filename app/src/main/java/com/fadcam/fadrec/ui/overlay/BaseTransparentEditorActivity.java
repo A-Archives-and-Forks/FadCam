@@ -16,7 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 
 /**
  * Base transparent fullscreen activity for all editing overlays.
@@ -150,11 +150,11 @@ public abstract class BaseTransparentEditorActivity extends AppCompatActivity {
         Intent broadcast = new Intent(ACTION_EDITOR_RESULT);
         broadcast.putExtra(EXTRA_RESULT_CODE, RESULT_SAVE);
         broadcast.putExtra(EXTRA_RESULT_DATA, resultData);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
+        this.sendBroadcast(broadcast.setPackage(this.getPackageName()));
         
         // Notify editor finished (re-enable annotation canvas)
         Intent finishBroadcast = new Intent(ACTION_EDITOR_FINISHED);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(finishBroadcast);
+        this.sendBroadcast(finishBroadcast.setPackage(this.getPackageName()));
         
         // Also set Activity result
         resultData.putString(EXTRA_RESULT_ACTION, ACTION_SAVE);
@@ -170,11 +170,11 @@ public abstract class BaseTransparentEditorActivity extends AppCompatActivity {
         // Send broadcast for AnnotationService
         Intent broadcast = new Intent(ACTION_EDITOR_RESULT);
         broadcast.putExtra(EXTRA_RESULT_CODE, RESULT_CANCELLED);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
+        this.sendBroadcast(broadcast.setPackage(this.getPackageName()));
         
         // Notify editor finished (re-enable annotation canvas)
         Intent finishBroadcast = new Intent(ACTION_EDITOR_FINISHED);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(finishBroadcast);
+        this.sendBroadcast(finishBroadcast.setPackage(this.getPackageName()));
         
         Bundle resultData = new Bundle();
         resultData.putString(EXTRA_RESULT_ACTION, ACTION_CANCEL);
@@ -191,11 +191,11 @@ public abstract class BaseTransparentEditorActivity extends AppCompatActivity {
         Intent broadcast = new Intent(ACTION_EDITOR_RESULT);
         broadcast.putExtra(EXTRA_RESULT_CODE, RESULT_DELETE);
         broadcast.putExtra(EXTRA_RESULT_DATA, resultData);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
+        this.sendBroadcast(broadcast.setPackage(this.getPackageName()));
         
         // Notify editor finished (re-enable annotation canvas)
         Intent finishBroadcast = new Intent(ACTION_EDITOR_FINISHED);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(finishBroadcast);
+        this.sendBroadcast(finishBroadcast.setPackage(this.getPackageName()));
         
         resultData.putString(EXTRA_RESULT_ACTION, ACTION_DELETE);
         setResult(RESULT_OK, getIntent().putExtras(resultData));

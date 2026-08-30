@@ -1653,9 +1653,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
                     );
                     i.putExtra(EXTRA_URI, cur.toString());
                     i.putExtra(EXTRA_POSITION_MS, pos);
-                    androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(
-                        this
-                    ).sendBroadcast(i);
+                    sendBroadcast(i.setPackage(getPackageName()));
                 } catch (Exception ignored) {}
             }
         } catch (Exception e) {

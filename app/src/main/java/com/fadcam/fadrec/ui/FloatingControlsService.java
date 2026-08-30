@@ -20,7 +20,6 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.fadcam.Constants;
 import com.fadcam.R;
@@ -374,7 +373,7 @@ public class FloatingControlsService extends Service {
         
         IntentFilter filter = new IntentFilter(Constants.BROADCAST_ON_SCREEN_RECORDING_STATE_CALLBACK);
         // Use LocalBroadcastManager for guaranteed delivery on Android 12+
-        LocalBroadcastManager.getInstance(this).registerReceiver(stateReceiver, filter);
+        androidx.core.content.ContextCompat.registerReceiver(this, stateReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED);
     }
 
     @Override
@@ -391,7 +390,7 @@ public class FloatingControlsService extends Service {
         }
         
         if (stateReceiver != null) {
-            LocalBroadcastManager.getInstance(this).unregisterReceiver(stateReceiver);
+            this.unregisterReceiver(stateReceiver);
         }
     }
 }

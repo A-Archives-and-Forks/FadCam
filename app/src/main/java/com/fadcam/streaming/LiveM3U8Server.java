@@ -1045,8 +1045,7 @@ import fi.iki.elonen.NanoHTTPD;
                         current.toString());
                 broadcastIntent.putExtra(com.fadcam.Constants.BROADCAST_EXTRA_CAMERA_TYPE_TO,
                         target.toString());
-                androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(context)
-                        .sendBroadcast(broadcastIntent);
+                context.sendBroadcast(broadcastIntent.setPackage(context.getPackageName()));
                 FLog.i(TAG, "✅ Camera switch (preference + broadcast): " + current + " → " + target);
             }
 
@@ -1123,7 +1122,7 @@ import fi.iki.elonen.NanoHTTPD;
             zoomBcast.putExtra(com.fadcam.Constants.EXTRA_BROADCAST_ZOOM_RATIO, ratio);
             zoomBcast.putExtra(com.fadcam.Constants.EXTRA_BROADCAST_PAN_X, effectivePanX);
             zoomBcast.putExtra(com.fadcam.Constants.EXTRA_BROADCAST_PAN_Y, effectivePanY);
-            androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(context).sendBroadcast(zoomBcast);
+            context.sendBroadcast(zoomBcast.setPackage(context.getPackageName()));
 
             return jsonResponse(
                     Response.Status.OK,
@@ -1181,9 +1180,7 @@ import fi.iki.elonen.NanoHTTPD;
                 exposureBroadcast.putExtra(
                     com.fadcam.Constants.EXTRA_BROADCAST_EXPOSURE_COMPENSATION,
                     ev);
-                androidx.localbroadcastmanager.content.LocalBroadcastManager
-                    .getInstance(context)
-                    .sendBroadcast(exposureBroadcast);
+                context.sendBroadcast(exposureBroadcast.setPackage(context.getPackageName()));
 
             android.content.Intent intent = new android.content.Intent(
                     context, com.fadcam.services.RecordingService.class);
