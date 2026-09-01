@@ -19,6 +19,7 @@ import java.lang.ref.WeakReference;
 
 import androidx.core.content.ContextCompat;
 
+@SuppressWarnings("deprecation") // vendored AppLock: FingerprintManagerCompat/CancellationSignal/USE_FINGERPRINT are the correct APIs for minSdk 24; BiometricPrompt is API 28+
 public class UnlockViewController extends AppLockViewController implements AppLock.UnlockDelegate, PINInputController.InputEventListener, PasswordInputController.InputEventListener {
 
     public interface Delegate {

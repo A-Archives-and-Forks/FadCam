@@ -67,8 +67,8 @@ public class PasswordInputView extends LinearLayout implements TextWatcher {
         Button toggleButton = new Button(getContext());
         toggleButton.setText(R.string.applock__password_show);
         toggleButton.setTextSize(10);
-        toggleButton.setTextColor(getResources().getColor(android.R.color.darker_gray));
-        toggleButton.setBackgroundColor(getResources().getColor(android.R.color.transparent));
+        toggleButton.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), android.R.color.darker_gray));
+        toggleButton.setBackgroundColor(androidx.core.content.ContextCompat.getColor(getContext(), android.R.color.transparent));
         
         LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, 
@@ -117,14 +117,14 @@ public class PasswordInputView extends LinearLayout implements TextWatcher {
         editText.requestFocus();
 
         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(editText, InputMethodManager.SHOW_FORCED);
+        imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
         
         // Add a delayed attempt as well for more reliability
         postDelayed(() -> {
             if (editText != null) {
                 editText.requestFocus();
                 InputMethodManager imm2 = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm2.showSoftInput(editText, InputMethodManager.SHOW_FORCED);
+                imm2.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
             }
         }, 200);
     }

@@ -54,11 +54,6 @@ public class UnlockActivity extends AppCompatActivity implements UnlockViewContr
         return super.onKeyDown(keyCode, event);
     }
 
-    @Override
-    public void onBackPressed() {
-        handleBackPressed();
-    }
-
     protected void handleBackPressed() {
         if(!getIntent().getBooleanExtra(INTENT_ALLOW_UNLOCKED_EXIT, false)){
             Toast.makeText(this, getString(R.string.applock__toast_unlock_required), Toast.LENGTH_LONG)
