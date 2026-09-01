@@ -138,7 +138,7 @@ public class ScreenRecordingService extends Service {
         WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         if (windowManager != null) {
             DisplayMetrics metrics = new DisplayMetrics();
-            windowManager.getDefaultDisplay().getRealMetrics(metrics);
+            com.fadcam.Utils.getRealDisplayMetrics(this, metrics);
             screenDensity = metrics.densityDpi;
 
             // Read configured resolution from SharedPreferences, fall back to device screen size
@@ -266,7 +266,7 @@ public class ScreenRecordingService extends Service {
         releasePreviewOnlyVirtualDisplay();
         if (recordingState == ScreenRecordingState.NONE) {
             releaseProjectionIfIdle();
-            stopForeground(STOP_FOREGROUND_REMOVE);
+            com.fadcam.Utils.stopForegroundCompat(ScreenRecordingService.this, true);
             stopSelf();
         } else {
             handleQueryRecordingState();
@@ -385,7 +385,7 @@ public class ScreenRecordingService extends Service {
                         handleStopRecording();
                     } else {
                         releaseProjectionIfIdle();
-                        stopForeground(STOP_FOREGROUND_REMOVE);
+                        com.fadcam.Utils.stopForegroundCompat(ScreenRecordingService.this, true);
                         stopSelf();
                     }
                 }
@@ -1006,7 +1006,7 @@ public class ScreenRecordingService extends Service {
                 releaseProjectionIfIdle();
                 
                 // Stop service
-                com.fadcam.Utils.stopForegroundCompat(this, true);
+                com.fadcam.Utils.stopForegroundCompat(ScreenRecordingService.this, true);
                 stopSelf();
             });
             

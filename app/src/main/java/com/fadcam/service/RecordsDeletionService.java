@@ -285,7 +285,7 @@ public class RecordsDeletionService extends Service {
             } catch (Exception e) {
                 FLog.e(TAG, "Error in maybeResumeProcessing", e);
                 processing.set(false);
-                stopForeground(STOP_FOREGROUND_REMOVE);
+                com.fadcam.Utils.stopForegroundCompat(RecordsDeletionService.this, true);
                 notificationManager.cancelProgress();
                 stopSelfResult(currentStartId);
             }
@@ -666,7 +666,7 @@ public class RecordsDeletionService extends Service {
         
         // Stop service now that session is finalized
         processing.set(false);
-        stopForeground(STOP_FOREGROUND_REMOVE);
+        com.fadcam.Utils.stopForegroundCompat(RecordsDeletionService.this, true);
         stopSelfResult(currentStartId);
     }
 
@@ -686,7 +686,7 @@ public class RecordsDeletionService extends Service {
         
         // Stop service now that session is finalized
         processing.set(false);
-        stopForeground(STOP_FOREGROUND_REMOVE);
+        com.fadcam.Utils.stopForegroundCompat(RecordsDeletionService.this, true);
         stopSelfResult(currentStartId);
     }
 

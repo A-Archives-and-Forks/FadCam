@@ -18,4 +18,8 @@
 - When given a user-reported bug or clue, verifies it against the actual code first — is it real, and did prior fixes already cover it — and traces the exact scenario end-to-end before declaring it solved or not. Confidence: 0.85
 - Wants unit tests written and run to verify that fixes hold up in edge cases (e.g., watermark/speed logic), not just a compile/build check. Confidence: 0.9
 - After building, expects the agent to install the app on the connected device (gradle install / adb) and verify it's actually there (package + versionName) before calling the work done — "u need to install app". Confidence: 0.8
-ff on the actual fix until they approve after testing. Confidence: 0.85
+When a blocking bug needs fixing, prefers implementing a diagnostic/preview feature first so the problem becomes visible and testable in-app (e.g., an import-preview UI that opens the buggy pref file and shows exactly what's malformed), and defers the actual fix until they approve after testing. Confidence: 0.85
+
+- When working in fast/unattended ("yolo") mode, never runs dangerous or destructive commands without asking first — expects the agent to use only safe, non-destructive work commands and to check before anything risky (e.g., git operations, app uninstall, device-state changes). Confidence: 0.95
+
+- After a large refactor or API-upgrade pass, wants a complete regression audit before sign-off: verify every newly introduced API call is version-guarded for minSdk/old-phone compatibility, confirm nothing regressed anywhere, and confirm the app still builds and runs (installed + launched) before declaring completion. Confidence: 0.85

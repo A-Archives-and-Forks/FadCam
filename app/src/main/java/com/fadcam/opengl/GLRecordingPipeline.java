@@ -1903,7 +1903,7 @@ public class GLRecordingPipeline {
                     }
 
                     // Check for valid data before writing to muxer
-                    boolean isKeyframe = (bufferInfo.flags & MediaCodec.BUFFER_FLAG_SYNC_FRAME) != 0;
+                    boolean isKeyframe = (bufferInfo.flags & MediaCodec.BUFFER_FLAG_KEY_FRAME) != 0;
 
                     // Preemptive keyframe request when near threshold (only once)
                     if (!pendingRollover && maxFileSizeBytes > 0 && segmentBytesWritten >= (long) (maxFileSizeBytes * ROLLOVER_PREEMPT_THRESHOLD_RATIO)) {

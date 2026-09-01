@@ -1313,9 +1313,8 @@ public class RemoteStreamManager {
     }
     
     /**
-     * @deprecated Use getConnectedClients() instead. Renamed for clarity.
+     * Backward-compatible alias for {@link #getConnectedClients()}.
      */
-    @Deprecated
     public List<String> getConnectedClientIPs() {
         return getConnectedClients();
     }

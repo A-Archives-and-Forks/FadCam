@@ -659,6 +659,7 @@ public class ScreenRecordingPipeline {
     /**
      * Initialize audio recording and encoding
      */
+    @SuppressWarnings("deprecation") // legacy BT SCO audio path
     private void initializeAudioEncoder() throws IOException {
         try {
             // Audio format configuration
@@ -1520,6 +1521,7 @@ public class ScreenRecordingPipeline {
     /**
      * Stop recording and release resources
      */
+    @SuppressWarnings("deprecation") // legacy BT SCO teardown path
     public void stopRecording() {
         if (isStopped) {
             return;

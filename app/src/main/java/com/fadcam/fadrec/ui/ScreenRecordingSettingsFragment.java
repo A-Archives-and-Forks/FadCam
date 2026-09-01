@@ -637,15 +637,11 @@ public class ScreenRecordingSettingsFragment extends Fragment {
         int physW = metrics.widthPixels;
         int physH = metrics.heightPixels;
         if (physW < 400 || physH < 400) {
-            WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
-            if (wm != null) {
-                Display display = wm.getDefaultDisplay();
-                if (display != null) {
-                    android.util.DisplayMetrics wmMetrics = new android.util.DisplayMetrics();
-                    display.getRealMetrics(wmMetrics);
-                    physW = wmMetrics.widthPixels;
-                    physH = wmMetrics.heightPixels;
-                }
+            android.util.DisplayMetrics wmMetrics = new android.util.DisplayMetrics();
+            com.fadcam.Utils.getRealDisplayMetrics(ctx, wmMetrics);
+            if (wmMetrics.widthPixels > 0 && wmMetrics.heightPixels > 0) {
+                physW = wmMetrics.widthPixels;
+                physH = wmMetrics.heightPixels;
             }
         }
         if (physW < 400 || physH < 400) { physW = 1920; physH = 1080; }
@@ -705,13 +701,24 @@ public class ScreenRecordingSettingsFragment extends Fragment {
         // Device display rates (optional, for high-refresh screens)
         Context ctx = getContext();
         if (ctx != null) {
-            WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
-            if (wm != null) {
-                Display display = wm.getDefaultDisplay();
-                if (display != null) {
-                    int rounded = Math.round(display.getRefreshRate());
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                android.view.Display d = ctx.getDisplay();
+                if (d != null) {
+                    int rounded = Math.round(d.getRefreshRate());
                     if (rounded >= 24 && rounded <= 120) {
                         result.add(rounded);
+                    }
+                }
+            } else {
+                WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
+                if (wm != null) {
+                    @SuppressWarnings("deprecation")
+                    Display display = wm.getDefaultDisplay();
+                    if (display != null) {
+                        int rounded = Math.round(display.getRefreshRate());
+                        if (rounded >= 24 && rounded <= 120) {
+                            result.add(rounded);
+                        }
                     }
                 }
             }

@@ -60,6 +60,7 @@ public class FadCamApplication extends Application implements DefaultLifecycleOb
     }
 
     @Override
+    @SuppressWarnings("deprecation") // getRunningTasks is deprecated; only used to identify the focused activity
     public void onStart(@androidx.annotation.NonNull LifecycleOwner owner) {
         // Don't send it for TextEditorActivity, TransparentPermissionActivity, etc.
         // which are transparent/standalone and shouldn't wake up the main app

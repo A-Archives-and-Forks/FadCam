@@ -188,6 +188,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
     private static final long SCRUB_GRACE_PERIOD_MS = 1000L; // 1 second grace period after scrub
 
     @Override
+    @SuppressWarnings("deprecation") // FLAG_TRANSLUCENT_STATUS deprecated; still needed for this legacy window
     protected void onCreate(Bundle savedInstanceState) {
         // Initialize SharedPreferencesManager for theme
         SharedPreferencesManager sharedPreferencesManager =

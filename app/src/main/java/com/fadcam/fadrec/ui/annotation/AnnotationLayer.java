@@ -120,7 +120,6 @@ public class AnnotationLayer {
     public void clearObjects() { objects.clear(); }
     
     // Backward compatibility - convert DrawingPath to PathObject
-    @Deprecated
     public void addPath(DrawingPath path) {
         // Convert old DrawingPath to new PathObject
         PathObject pathObj = new PathObject(path.path, path.color, path.strokeWidth, path.isEraser);

@@ -28,6 +28,7 @@ public final class ServiceUtils {
      * @param serviceClass Service class to check
      * @return true if running, false otherwise
      */
+    @SuppressWarnings("deprecation") // getRunningServices only returns own-app services on API 26+, which is what we check
     public static boolean isServiceRunning(@NonNull Context context, @NonNull Class<?> serviceClass) {
         try {
             ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);

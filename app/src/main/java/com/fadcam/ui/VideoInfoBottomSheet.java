@@ -92,7 +92,7 @@ public class VideoInfoBottomSheet extends BottomSheetDialogFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            videoUri = getArguments().getParcelable(ARG_VIDEO_URI);
+            videoUri = getArguments().getParcelable(ARG_VIDEO_URI, android.net.Uri.class);
             displayName = getArguments().getString(ARG_DISPLAY_NAME);
             fileSize = getArguments().getLong(ARG_FILE_SIZE);
             lastModified = getArguments().getLong(ARG_LAST_MODIFIED);
@@ -490,6 +490,7 @@ public class VideoInfoBottomSheet extends BottomSheetDialogFragment {
     /**
      * Attempts to extract location data from EXIF metadata
      */
+    @SuppressWarnings("deprecation") // ExifInterface.getLatLong(float[]) has no non-deprecated Java equivalent on all supported APIs
     private String extractLocationFromExif() {
         if (!"file".equals(videoUri.getScheme())) {
             return getString(R.string.video_info_no_location);
@@ -542,6 +543,7 @@ public class VideoInfoBottomSheet extends BottomSheetDialogFragment {
     /**
      * Runs reverse geocoding on a background thread and updates the value view.
      */
+    @SuppressWarnings("deprecation") // Geocoder.getFromLocation(...,int) — the listener API needs a different threading model
     private void asyncGeocode(double lat, double lon, @NonNull TextView valueView, @NonNull String rawCoords) {
         new Thread(() -> {
             String result = rawCoords;

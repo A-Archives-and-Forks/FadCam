@@ -161,6 +161,7 @@ public class RecordingTileService extends TileService {
     }
 
     // Launch shortcut activity to bypass Android 14+ background FGS microphone/camera launch restrictions
+    @SuppressWarnings("deprecation") // startActivityAndCollapse(Intent) is the only path below API 34
     private void launchActivitySafely(final Intent intent) {
         Runnable launchRunnable = new Runnable() {
             @Override

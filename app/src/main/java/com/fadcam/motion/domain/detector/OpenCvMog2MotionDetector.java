@@ -45,7 +45,9 @@ public class OpenCvMog2MotionDetector implements MotionDetector, MotionDebugInfo
     private boolean lastGlobalMotionSuppressed = false;
 
     public OpenCvMog2MotionDetector() {
-        if (!OpenCVLoader.initDebug()) {
+        @SuppressWarnings("deprecation") // OpenCVLoader.initDebug() is deprecated; initLocal is the successor but debug init still works
+        boolean inited = OpenCVLoader.initDebug();
+        if (!inited) {
             throw new IllegalStateException("OpenCV native runtime not available");
         }
         mog2 = Video.createBackgroundSubtractorMOG2(500, 16.0, false);

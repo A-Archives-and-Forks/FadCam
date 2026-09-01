@@ -31,13 +31,17 @@ import java.util.List;
  * OnboardingPermissionsFragment handles permission requests and enforces policy for AppIntro.
  */
 public class OnboardingPermissionsFragment extends Fragment implements SlidePolicy {
-    private static final int PERMISSIONS_REQUEST_CODE = 101;
     private boolean permissionsGranted = false;
     private MaterialButton grantButton;
     private int permissionRequestCount = 0; // Track how many times requested
     private boolean permanentlyDenied = false;
     private TextView permissionStatusText; // Text view to show status instead of toasts
     private boolean statusToastShown = false; // Flag to prevent multiple toasts
+
+    private final androidx.activity.result.ActivityResultLauncher<String[]> permissionLauncher =
+            registerForActivityResult(
+                    new androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions(),
+                    result -> checkPermissionsAndUpdateUI());
 
     @Nullable
     @Override
@@ -114,7 +118,7 @@ public class OnboardingPermissionsFragment extends Fragment implements SlidePoli
             permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
         }
-        requestPermissions(permissions.toArray(new String[0]), PERMISSIONS_REQUEST_CODE);
+        permissionLauncher.launch(permissions.toArray(new String[0]));
         permissionRequestCount++;
     }
 
@@ -185,14 +189,6 @@ public class OnboardingPermissionsFragment extends Fragment implements SlidePoli
     public void onResume() {
         super.onResume();
         checkPermissionsAndUpdateUI();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSIONS_REQUEST_CODE) {
-            checkPermissionsAndUpdateUI();
-        }
     }
 
     @Override

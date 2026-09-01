@@ -21,6 +21,7 @@ public final class SystemBarUtil {
      * Sets the navigation bar color, honoring the API 35+ deprecation: on
      * API 35+ the call is a no-op under edge-to-edge, so it is skipped.
      */
+    @SuppressWarnings("deprecation") // Window#setNavigationBarColor is deprecated on API 35+
     public static void setNavigationBarColor(Window window, int color) {
         if (window == null) return;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
@@ -72,6 +73,7 @@ public final class SystemBarUtil {
      * Uses WindowInsetsController (API 30+) and falls back to the legacy
      * SYSTEM_UI_FLAG on older devices.
      */
+    @SuppressWarnings("deprecation") // legacy SYSTEM_UI_FLAG fallback for < API 30
     public static void setStatusBarIconsLight(Window window, boolean light) {
         View decor = window != null ? window.getDecorView() : null;
         if (decor == null) return;

@@ -220,7 +220,7 @@ public class ExportService extends Service {
                 sendBroadcast(broadcast.setPackage(getPackageName()));
                 FLog.d(TAG, "ACTION_EXPORT_COMPLETED broadcast sent");
                 
-                stopForeground(STOP_FOREGROUND_DETACH);
+                com.fadcam.Utils.stopForegroundCompat(ExportService.this, false);
                 stopSelf();
             }
 
@@ -239,7 +239,7 @@ public class ExportService extends Service {
                 sendBroadcast(broadcast.setPackage(getPackageName()));
                 FLog.d(TAG, "ACTION_EXPORT_ERROR broadcast sent");
                 
-                stopForeground(STOP_FOREGROUND_DETACH);
+                com.fadcam.Utils.stopForegroundCompat(ExportService.this, false);
                 stopSelf();
             }
         });
@@ -262,7 +262,7 @@ public class ExportService extends Service {
             sendBroadcast(broadcast.setPackage(getPackageName()));
             FLog.d(TAG, "ACTION_EXPORT_CANCELLED broadcast sent");
         }
-        stopForeground(STOP_FOREGROUND_REMOVE);
+        com.fadcam.Utils.stopForegroundCompat(ExportService.this, true);
         stopSelf();
     }
 

@@ -265,6 +265,7 @@ public class MaterialNumberPickerBottomSheetFragment extends BottomSheetDialogFr
     }
 
     @Override
+    @SuppressWarnings("deprecation") // pre-O vibrate(long) fallback
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Bundle a = getArguments();

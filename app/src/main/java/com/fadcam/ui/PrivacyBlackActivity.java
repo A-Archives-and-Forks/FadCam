@@ -22,6 +22,7 @@ public class PrivacyBlackActivity extends Activity {
     private Runnable resetTapCountRunnable = () -> tapCount = 0;
 
     @Override
+    @SuppressWarnings("deprecation") // FLAG_FULLSCREEN is deprecated but still the reliable way to hide the status bar pre-API-30
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         

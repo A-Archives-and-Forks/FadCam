@@ -243,7 +243,9 @@ public class ClockWidgetProvider extends AppWidgetProvider {
                                     android.graphics.Typeface typeface) {
         TextPaint paint = new TextPaint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);
         paint.setColor(color);
-        paint.setTextSize(textSizeSp * context.getResources().getDisplayMetrics().scaledDensity);
+        paint.setTextSize(android.util.TypedValue.applyDimension(
+                android.util.TypedValue.COMPLEX_UNIT_SP, textSizeSp,
+                context.getResources().getDisplayMetrics()));
         if (typeface != null) paint.setTypeface(typeface);
 
         if (addShadow) {

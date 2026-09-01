@@ -40,9 +40,20 @@ public class PhotoCaptureActivity extends ComponentActivity {
     public static final String EXTRA_SHORTCUT_PHOTO_CAMERA_MODE = "shortcut_photo_camera_mode";
     public static final String PHOTO_CAMERA_MODE_BACK = "back";
     public static final String PHOTO_CAMERA_MODE_FRONT = "front";
-    private static final int RC_CAMERA = 9007;
     private final ExecutorService cameraExecutor = Executors.newSingleThreadExecutor();
     private boolean launchedFromShortcut = false;
+
+    private final androidx.activity.result.ActivityResultLauncher<String> cameraPermissionLauncher =
+            registerForActivityResult(
+                    new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+                    granted -> {
+                        if (granted) {
+                            captureSinglePhoto();
+                        } else {
+                            Toast.makeText(this, R.string.camera_permission_denied, Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+                    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,12 +93,13 @@ public class PhotoCaptureActivity extends ComponentActivity {
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, RC_CAMERA);
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
             return;
         }
         captureSinglePhoto();
     }
 
+    @SuppressWarnings("deprecation") // CameraX setTargetResolution fallback for null targetSize
     private void captureSinglePhoto() {
         ListenableFuture<ProcessCameraProvider> providerFuture = ProcessCameraProvider.getInstance(this);
         providerFuture.addListener(() -> {
@@ -101,12 +113,29 @@ public class PhotoCaptureActivity extends ComponentActivity {
                 if (getDisplay() != null) {
                     targetRotation = getDisplay().getRotation();
                 }
-                ImageCapture imageCapture = new ImageCapture.Builder()
-                        .setTargetResolution(targetSize != null ? targetSize : new Size(1920, 1080))
-                        .setTargetRotation(targetRotation)
-                        .setJpegQuality(88)
-                        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                        .build();
+                ImageCapture imageCapture;
+                if (targetSize != null) {
+                    androidx.camera.core.resolutionselector.ResolutionSelector sel =
+                            new androidx.camera.core.resolutionselector.ResolutionSelector.Builder()
+                                    .setResolutionStrategy(
+                                            new androidx.camera.core.resolutionselector.ResolutionStrategy(
+                                                    targetSize,
+                                                    androidx.camera.core.resolutionselector.ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER_THEN_HIGHER))
+                                    .build();
+                    imageCapture = new ImageCapture.Builder()
+                            .setResolutionSelector(sel)
+                            .setTargetRotation(targetRotation)
+                            .setJpegQuality(88)
+                            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                            .build();
+                } else {
+                    imageCapture = new ImageCapture.Builder()
+                            .setTargetResolution(new Size(1920, 1080))
+                            .setTargetRotation(targetRotation)
+                            .setJpegQuality(88)
+                            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                            .build();
+                }
 
                 CameraSelector selector = CameraSelector.DEFAULT_BACK_CAMERA;
                 String shortcutMode = getIntent() != null
@@ -330,17 +359,6 @@ public class PhotoCaptureActivity extends ComponentActivity {
             }
         }
         finish();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == RC_CAMERA && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            captureSinglePhoto();
-        } else {
-            Toast.makeText(this, R.string.camera_permission_denied, Toast.LENGTH_SHORT).show();
-            finish();
-        }
     }
 
     @Override

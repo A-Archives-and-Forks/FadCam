@@ -3813,10 +3813,9 @@ public class RecordingService extends Service {
     private int getDisplayToSensorRotation() {
         int displayRotationDeg = 0;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            android.view.WindowManager wm = (android.view.WindowManager)
-                    getSystemService(Context.WINDOW_SERVICE);
-            if (wm != null && wm.getDefaultDisplay() != null) {
-                displayRotationDeg = 90 * wm.getDefaultDisplay().getRotation();
+            android.view.Display display = getDisplay();
+            if (display != null) {
+                displayRotationDeg = 90 * display.getRotation();
             }
         }
         int total = (getCurrentSensorOrientationDegrees() + displayRotationDeg) % 360;
@@ -6238,6 +6237,7 @@ public class RecordingService extends Service {
     /**
      * Creates a high-speed constrained capture session for 60fps+ recording
      */
+    @SuppressWarnings("deprecation") // createConstrainedHighSpeedCaptureSession has no equivalent SessionConfiguration path that preserves per-surface high-speed config on all API levels
     private void createHighSpeedSession(List<Surface> surfaces, CameraCharacteristics characteristics,
             int targetFrameRate, CameraType cameraType) {
         try {
@@ -6312,6 +6312,7 @@ public class RecordingService extends Service {
      * Fallback to create a standard session with the best possible frame rate
      * settings
      */
+    @SuppressWarnings("deprecation") // legacy createCaptureSession fallback for < API 28
     private void createStandardSession(List<Surface> surfaces, int targetFrameRate,
             CameraCharacteristics characteristics, CameraType cameraType) {
         try {
@@ -6349,7 +6350,22 @@ public class RecordingService extends Service {
             if (previewOnlyActive) {
                 previewSessionConfigInFlight = true;
             }
-            cameraDevice.createCaptureSession(surfaces, captureSessionCallback, backgroundHandler);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                java.util.List<android.hardware.camera2.params.OutputConfiguration> outputs =
+                        new java.util.ArrayList<>();
+                for (android.view.Surface s : surfaces) {
+                    outputs.add(new android.hardware.camera2.params.OutputConfiguration(s));
+                }
+                android.hardware.camera2.params.SessionConfiguration sessionConfig =
+                        new android.hardware.camera2.params.SessionConfiguration(
+                                android.hardware.camera2.params.SessionConfiguration.SESSION_REGULAR,
+                                outputs,
+                                backgroundHandler::post,
+                                captureSessionCallback);
+                cameraDevice.createCaptureSession(sessionConfig);
+            } else {
+                cameraDevice.createCaptureSession(surfaces, captureSessionCallback, backgroundHandler);
+            }
         } catch (Exception e) {
             FLog.e(TAG, "Failed to create standard session", e);
             previewSessionConfigInFlight = false;

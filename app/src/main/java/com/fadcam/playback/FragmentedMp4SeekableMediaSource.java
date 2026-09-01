@@ -18,7 +18,6 @@ import androidx.media3.exoplayer.source.ClippingMediaSource;
 import androidx.media3.exoplayer.source.CompositeSequenceableLoaderFactory;
 import androidx.media3.exoplayer.source.DefaultCompositeSequenceableLoaderFactory;
 import androidx.media3.exoplayer.source.MediaSource;
-import androidx.media3.exoplayer.source.MediaSourceFactory;
 import androidx.media3.exoplayer.source.ProgressiveMediaSource;
 import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy;
 import androidx.media3.extractor.DefaultExtractorsFactory;
@@ -40,7 +39,7 @@ import androidx.media3.extractor.mp4.FragmentedMp4Extractor;
  * structure rather than relying on optional index boxes.
  */
 @UnstableApi
-public class FragmentedMp4SeekableMediaSource implements MediaSourceFactory {
+public class FragmentedMp4SeekableMediaSource implements MediaSource.Factory {
 
     private static final String TAG = "FMp4SeekableSource";
 
@@ -95,14 +94,10 @@ public class FragmentedMp4SeekableMediaSource implements MediaSourceFactory {
             // enableInitialDiscontinuity = false (smooth start)
             // allowDynamicClippingUpdates = true (handle duration updates)
             // relativeToDefaultPosition = false (use absolute positions)
-            return new ClippingMediaSource(
-                    baseSource,
-                    /* startPositionUs= */ 0,
-                    /* endPositionUs= */ durationUs,
-                    /* enableInitialDiscontinuity= */ false,
-                    /* allowDynamicClippingUpdates= */ true,
-                    /* relativeToDefaultPosition= */ false
-            );
+            return new ClippingMediaSource.Builder(baseSource)
+                    .setStartPositionUs(0)
+                    .setEndPositionUs(durationUs)
+                    .build();
         } else {
             FLog.w(TAG, "Could not determine duration for: " + uri.getLastPathSegment() + 
                        ", falling back to progressive source");
@@ -162,14 +157,14 @@ public class FragmentedMp4SeekableMediaSource implements MediaSourceFactory {
 
     @NonNull
     @Override
-    public MediaSourceFactory setDrmSessionManagerProvider(@Nullable DrmSessionManagerProvider provider) {
+    public MediaSource.Factory setDrmSessionManagerProvider(@Nullable DrmSessionManagerProvider provider) {
         progressiveFactory.setDrmSessionManagerProvider(provider);
         return this;
     }
 
     @NonNull
     @Override
-    public MediaSourceFactory setLoadErrorHandlingPolicy(@Nullable LoadErrorHandlingPolicy policy) {
+    public MediaSource.Factory setLoadErrorHandlingPolicy(@Nullable LoadErrorHandlingPolicy policy) {
         progressiveFactory.setLoadErrorHandlingPolicy(policy);
         return this;
     }

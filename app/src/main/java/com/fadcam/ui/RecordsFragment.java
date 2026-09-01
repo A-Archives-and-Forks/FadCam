@@ -2362,8 +2362,6 @@ public class RecordsFragment extends BaseFragment implements
 
         // Apply optimized layout settings
         recyclerView.setItemViewCacheSize(20); // Increase view cache size
-        recyclerView.setDrawingCacheEnabled(true);
-        recyclerView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
         recyclerView.setHasFixedSize(false); // Mixed item types (month headers + records)
 
         recyclerView.addItemDecoration(itemDecoration = new SpacesItemDecoration(4)); // Default spacing

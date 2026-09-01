@@ -110,6 +110,7 @@ public abstract class BaseTransparentEditorActivity extends AppCompatActivity {
     /**
      * Setup window for transparent overlay appearance
      */
+    @SuppressWarnings("deprecation") // SOFT_INPUT_ADJUST_RESIZE has no direct modern replacement for overlay windows
     private void setupTransparentWindow() {
         // CRITICAL: Show on top of other app overlays (like AnnotationService overlay)
         getWindow().setFlags(

@@ -211,7 +211,7 @@ public class BatchMediaActionService extends Service {
         completedIntent.putExtra(Constants.EXTRA_BATCH_COMPLETED_MESSAGE, summary);
         sendBroadcast(completedIntent);
 
-        stopForeground(STOP_FOREGROUND_REMOVE);
+        com.fadcam.Utils.stopForegroundCompat(BatchMediaActionService.this, true);
         notificationManager.cancelProgress();
         stopSelf(startId);
     }

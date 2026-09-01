@@ -126,7 +126,7 @@ public class CloudAccountActivity extends AppCompatActivity {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
-        settings.setDatabaseEnabled(true);
+        
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         settings.setAllowContentAccess(true);
         

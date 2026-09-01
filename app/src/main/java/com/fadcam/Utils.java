@@ -48,7 +48,9 @@ public class Utils {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             return clazz.cast(intent.getSerializableExtra(name, clazz));
         }
-        return (T) intent.getSerializableExtra(name);
+        @SuppressWarnings("deprecation")
+        Object legacy = intent.getSerializableExtra(name);
+        return (T) legacy;
     }
 
     /**
@@ -93,6 +95,34 @@ public class Utils {
             service.stopForeground(android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST);
         } else {
             service.stopForeground(removeNotification);
+        }
+    }
+
+    /**
+     * Fills the given DisplayMetrics with the real screen size, using
+     * WindowManager#getCurrentWindowMetrics on API 30+ and the legacy
+     * getDefaultDisplay().getRealMetrics() below it (minSdk is 24, so the
+     * legacy path is only reachable on API 24-29).
+     */
+    @SuppressWarnings("deprecation") // legacy getDefaultDisplay().getRealMetrics() fallback for < API 30
+    public static void getRealDisplayMetrics(android.content.Context context, android.util.DisplayMetrics out) {
+        if (out == null) return;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            android.view.WindowManager wm = (android.view.WindowManager) context.getSystemService(android.content.Context.WINDOW_SERVICE);
+            if (wm != null) {
+                android.graphics.Rect bounds = wm.getCurrentWindowMetrics().getBounds();
+                out.widthPixels = bounds.width();
+                out.heightPixels = bounds.height();
+                android.util.DisplayMetrics res = context.getResources().getDisplayMetrics();
+                out.density = res.density;
+                out.densityDpi = res.densityDpi;
+                out.scaledDensity = res.scaledDensity;
+                return;
+            }
+        }
+        android.view.WindowManager wm = (android.view.WindowManager) context.getSystemService(android.content.Context.WINDOW_SERVICE);
+        if (wm != null) {
+            wm.getDefaultDisplay().getRealMetrics(out);
         }
     }
 

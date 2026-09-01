@@ -125,6 +125,7 @@ public class InlineTextEditor extends BaseEditorOverlay {
     }
 
     @Override
+    @SuppressWarnings("deprecation") // SOFT_INPUT_ADJUST_RESIZE has no direct modern replacement for overlay windows
     protected void initializeLayoutParams() {
         super.initializeLayoutParams();
         // Adjust window when keyboard appears to keep content visible

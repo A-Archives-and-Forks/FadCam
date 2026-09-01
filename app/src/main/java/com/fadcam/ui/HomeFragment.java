@@ -6298,7 +6298,7 @@ public class HomeFragment extends BaseFragment {
             HijrahDate hijrahDate = HijrahChronology.INSTANCE.dateNow();
             DateTimeFormatter dateFormatterArabic = DateTimeFormatter.ofPattern(
                 "d MMMM yyyy",
-                new Locale("ar")
+                Locale.forLanguageTag("ar")
             );
             currentDateArabic = dateFormatterArabic.format(hijrahDate);
         }

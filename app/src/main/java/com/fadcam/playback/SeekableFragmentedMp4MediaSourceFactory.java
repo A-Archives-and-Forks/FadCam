@@ -224,14 +224,10 @@ public class SeekableFragmentedMp4MediaSourceFactory {
             if (durationUs > 0) {
                 FLog.d(TAG, "Content URI fMP4: ClippingMediaSource duration=" +
                       (durationUs / 1_000_000.0) + "s");
-                return new ClippingMediaSource(
-                        baseSource,
-                        /* startPositionUs= */ 0,
-                        /* endPositionUs= */ durationUs,
-                        /* enableInitialDiscontinuity= */ false,
-                        /* allowDynamicClippingUpdates= */ true,
-                        /* relativeToDefaultPosition= */ false
-                );
+                return new ClippingMediaSource.Builder(baseSource)
+                        .setStartPositionUs(0)
+                        .setEndPositionUs(durationUs)
+                        .build();
             }
             FLog.w(TAG, "Content URI fMP4: could not determine duration, using raw source");
             return baseSource;
