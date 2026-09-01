@@ -318,6 +318,7 @@ public class PlaybackService extends Service {
         }
     }
 
+    @SuppressWarnings("deprecation") // androidx.media.app.NotificationCompat.MediaStyle still works; the media3 MediaSession notification migration is a larger refactor
     private void buildAndShowNotification() {
         Context ctx = this;
         boolean playing = false;
